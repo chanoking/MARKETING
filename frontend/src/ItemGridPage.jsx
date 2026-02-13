@@ -2,67 +2,105 @@ import { useEffect, useState } from "react";
 
 export default function ItemGridPage() {
   const [items, setItems] = useState([]);
-  const [selectedItem, setSelectedItem] = useState(null)
+  const [selectedItem, setSelectedItem] = useState(null);
   const [selectedKeywords, setSelectedKeywords] = useState([]);
-  const [allKeywords, setAllKeywords] = useState([])
-  const [file, setFile] = useState(null)
-  const [searchTerm, setSearchTerm] = useState("")
-  const [searchResults, setSearchResults] = useState([])
-  const [searchMode, setSearchMode] = useState("item");
+  const [allKeywords, setAllKeywords] = useState([]);
 
+  const [file, setFile] = useState(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [searchResults, setSearchResults] = useState([]);
+  const [searchMode, setSearchMode] = useState("item"); // item | global
+
+  const [selectedDate, setSelectedDate] = useState(
+    new Date().toISOString().slice(0, 10)
+  );
+
+  /* =======================
+     아이템 목록 로드 (최초 1회)
+  ======================= */
   useEffect(() => {
-    async function fetchData() {
+    async function fetchItems() {
       const res = await fetch("http://localhost:3000/items");
       const data = await res.json();
       setItems(data);
     }
-    fetchData();
+    fetchItems();
   }, []);
 
-  const handleClick = async (item) => {
-    if (selectedItem && selectedItem._id === item._id){
+  /* =======================
+     날짜 or 아이템 변경 시 키워드 로드
+  ======================= */
+  useEffect(() => {
+    async function fetchKeywords() {
+      if (!selectedDate) return;
+
+      const url = selectedItem
+        ? `http://localhost:3000/keywords?itemId=${selectedItem._id}&date=${selectedDate}`
+        : `http://localhost:3000/keywords?date=${selectedDate}`;
+
+      const res = await fetch(url);
+      const data = await res.json();
+
+      setSelectedKeywords(data);
+      setSearchResults([]); // 날짜 변경 시 검색 초기화
+    }
+
+    fetchKeywords();
+  }, [selectedDate, selectedItem]);
+
+  /* =======================
+     아이템 클릭 (토글)
+  ======================= */
+  const handleClick = (item) => {
+    if (selectedItem && selectedItem._id === item._id) {
       setSelectedItem(null);
       setSelectedKeywords([]);
-      return;
+    } else {
+      setSelectedItem(item);
     }
-
-    setSelectedItem(item);
-    const res = await fetch(`http://localhost:3000/items/${item._id}`);
-    const keywords = await res.json();
-    setSelectedKeywords(keywords);
   };
 
+  /* =======================
+     날짜 이동
+  ======================= */
+  const changeDate = (days) => {
+    const d = new Date(selectedDate);
+    d.setDate(d.getDate() + days);
+    setSelectedDate(d.toISOString().slice(0, 10));
+  };
+
+  /* =======================
+     파일 업로드
+  ======================= */
   const handleFileUpload = (e) => {
     setFile(e.target.files[0]);
-  }
+  };
 
   const uploadExcel = async () => {
-    if (!file) return alert("파일 선택 먼저!")
+    if (!file) return alert("파일 선택 먼저!");
 
     const formData = new FormData();
-    formData.append("file", file)
+    formData.append("file", file);
 
-    try {
-      const res = await fetch("http://localhost:3000/upload-excel", {
-        method: "POST",
-        body: formData,
-      });
+    const res = await fetch("http://localhost:3000/upload-excel", {
+      method: "POST",
+      body: formData,
+    });
 
-      const data = await res.json();
-      if (data.success){
-        alert(data.message);
-        if (selectedItem) handleClick(selectedItem);
-      }else{
-        alert("업데이트 실패: " + data.error);
-      }
-    }catch(err){
-      console.log(err);
-      alert("업로드 중 오류 발생")
+    const data = await res.json();
+    alert(data.message || "업데이트 완료");
+
+    // 현재 상태 다시 로드
+    if (selectedItem || selectedDate) {
+      setSelectedItem((prev) => prev);
     }
-  }
+  };
 
+  /* =======================
+     검색
+  ======================= */
   const handleSearch = async () => {
-    if (!searchTerm) return alert("검색어를 입력하세요!");
+    if (!searchTerm) return alert("검색어를 입력하세요");
 
     let source = [];
 
@@ -90,88 +128,114 @@ export default function ItemGridPage() {
     setSearchResults(results);
   };
 
-
-    return (
-  <>
-    {/* Upload Section */}
-    <div style={{ marginBottom: 20, marginLeft: 20, userSelect:"none" }}>
-      <input
-        type="file"
-        accept=".xlsx, .xls"
-        onChange={handleFileUpload}
-      />
-      <button onClick={uploadExcel} style={{ marginLeft: 8 }}>
-        UPDATE
-      </button>
-    </div>
-
-    <div style={{ marginBottom: 20, marginLeft: 20, userSelect: "none"}}>  
-      <input
-        type="text"
-        value={searchTerm}
-        onChange={(e) => setSearchTerm(e.target.value)}
-        placeholder="키워드 검색"
-        />
-      <button onClick={handleSearch} style={{ marginLeft: 8}}>
-        검색
-      </button>
-    </div>
-
-    {/* Items Grid */}
-    <div style={{ padding: 20 }}>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(8, 1fr)", gap: 12 }}>
-        {items.map((item) => (
-          <div
-            key={item._id}
-            style={{
-              border: "1px solid #ccc",
-              padding: 16,
-              cursor: "pointer",
-              alignItems: "center",
-              justifyContent: "center",
-              textAlign: "center",
-              userSelect: "none"
-            }}
-            onClick={() => handleClick(item)}
-          >
-            {item.item}
-          </div>
-        ))}
+  /* =======================
+     화면
+  ======================= */
+  return (
+    <>
+      {/* 업로드 */}
+      <div style={{ margin: 20, userSelect: "none" }}>
+        <input type="file" accept=".xlsx, .xls" onChange={handleFileUpload} />
+        <button onClick={uploadExcel} style={{ marginLeft: 8, userSelect: "none" }}>
+          UPDATE
+        </button>
       </div>
 
-    {/* Keywords List*/}
-    {(selectedItem || searchResults.length > 0) && (
-      <div className="keywords-list" style={{ marginTop: 20}}>
-        {(searchResults.length > 0 ? searchResults : selectedKeywords).map(
-          (kw) => (
+      {/* 날짜 컨트롤 */}
+      <div style={{ marginLeft: 20, userSelect: "none" }}>
+        <button onClick={() => changeDate(-1)}>◀</button>
+        <span style={{ margin: "0 10px" }}>{selectedDate}</span>
+        <button onClick={() => changeDate(1)}>▶</button>
+
+        <input
+          type="date"
+          value={selectedDate}
+          onChange={(e) => setSelectedDate(e.target.value)}
+          style={{ marginLeft: 10 }}
+        />
+      </div>
+
+      {/* 검색 */}
+      <div style={{ margin: 20, userSelect: "none" }}>
+        <select
+          value={searchMode}
+          onChange={(e) => setSearchMode(e.target.value)}
+        >
+          <option value="item">아이템 내 검색</option>
+          <option value="global">전체 검색</option>
+        </select>
+
+        <input
+          type="text"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          placeholder="키워드 검색"
+          style={{ marginLeft: 8 }}
+        />
+        <button onClick={handleSearch} style={{ marginLeft: 8, userSelect: "none"}}>
+          검색
+        </button>
+      </div>
+
+      {/* 아이템 그리드 */}
+      <div style={{ padding: 20 }}>
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(8, 1fr)",
+            gap: 12,
+          }}
+        >
+          {items.map((item) => (
             <div
-              key={kw._id}
+              key={item._id}
+              onClick={() => handleClick(item)}
               style={{
                 border: "1px solid #ccc",
-                padding: "8px 12px",
-                marginBottom: "8px",
-                borderRadius: "4px",
-                backgroundColor: "#f0f0f0",
+                padding: 12,
+                textAlign: "center",
+                cursor: "pointer",
+                background:
+                  selectedItem?._id === item._id ? "#e6f3ff" : "#fff",
                 userSelect: "none",
-                display: "flex",
-                gap: "12px"
               }}
             >
-              <span>{kw.keyword}</span>
-              <span>{kw.env}</span>
-              <span>{kw.visible ? "노출" : "미노출"}</span>
-              <span>{kw.mobile}</span>
-              <span>{kw.pc}</span>
-              <span>{kw.competition}</span>
+              {item.item}
             </div>
-          )
-        )}
-        {searchResults.length === 0 && searchTerm && (
-          <div>검색 결과가 없습니다. 키워드를 확인해주세요!</div>
-        )}
-          </div>
-    )}
+          ))}
+        </div>
 
+        {/* 키워드 리스트 */}
+        {(selectedItem || searchResults.length > 0) && (
+          <div style={{ marginTop: 20 }}>
+            {(searchResults.length > 0
+              ? searchResults
+              : selectedKeywords
+            ).map((kw) => (
+              <div
+                key={kw._id}
+                style={{
+                  border: "1px solid #ccc",
+                  padding: 8,
+                  marginBottom: 6,
+                  display: "flex",
+                  gap: 12,
+                  background: "#f5f5f5",
+                }}
+              >
+                <span>{kw.keyword}</span>
+                <span>{kw.mobile}</span>
+                <span>{kw.pc}</span>
+                <span>{kw.visible ? "노출" : "미노출"}</span>
+                <span>{kw.competition}</span>
+              </div>
+            ))}
+
+            {searchResults.length === 0 && searchTerm && (
+              <div>검색 결과가 없습니다.</div>
+            )}
+          </div>
+        )}
       </div>
     </>
   );
