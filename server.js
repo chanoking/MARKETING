@@ -57,12 +57,12 @@ async function startServer() {
     ========================= */
     app.get("/keywords", async (req, res) => {
       try {
-        const { date, itemId } = req.query;
+        const { date, item_id } = req.query;
 
         const query = {};
 
-        if (itemId) {
-          query._id = itemId;
+        if (item_id) {
+          query.item_id = item_id;
         }
 
         if (date) {
