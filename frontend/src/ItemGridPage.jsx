@@ -33,10 +33,11 @@ export default function ItemGridPage() {
   useEffect(() => {
     async function fetchKeywords() {
       if (!selectedDate) return;
+      const formattedDate = selectedDate.toISOString().split("T")[0];
 
       const url = selectedItem
-        ? `http://localhost:3000/keywords?itemId=${selectedItem._id}&date=${selectedDate}`
-        : `http://localhost:3000/keywords?date=${selectedDate}`;
+        ? `http://localhost:3000/keywords?item_id=${selectedItem._id}&date=${formattedDate}`
+        : `http://localhost:3000/keywords?date=${formattedDate}`;
 
       const res = await fetch(url);
       const data = await res.json();

@@ -58,10 +58,23 @@ async function startServer() {
     app.get("/keywords", async (req, res) => {
       try {
         const { date, itemId } = req.query;
+
         const query = {};
 
-        if (date) query.date = date;
-        if (itemId) query.item_id = itemId;
+        if (itemId) {
+          query._id = itemId;
+        }
+
+        if (date) {
+          const start = new Date(date);
+          const end = new Date(date);
+          end.setDate(end.getDate() + 1);
+
+          query["state.date"] = {
+            $gte: start,
+            $lt: end
+          };
+        }
 
         const keywords = await db
           .collection("Keywords")
@@ -69,6 +82,7 @@ async function startServer() {
           .toArray();
 
         res.json(keywords);
+
       } catch (err) {
         res.status(500).json({ error: err.message });
       }
@@ -95,14 +109,13 @@ async function startServer() {
 
         for (const row of rows) {
           // 최소 유효성 검사
-          if (!row.keyword || !row.item_id || !row.date) continue;
+          if (!row.keyword || !row.date) continue;
 
           const normalizedDate = String(row.date).slice(0, 10);
 
           await keywordsCollection.updateOne(
             {
               keyword: row.keyword,
-              item_id: row.item_id,
               date: normalizedDate,
             },
             {
