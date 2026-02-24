@@ -6,6 +6,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import dotenv from "dotenv";
 import cors from "cors";
+import { ObjectId } from "mongodb";
 
 dotenv.config();
 
@@ -57,23 +58,12 @@ async function startServer() {
     ========================= */
     app.get("/keywords", async (req, res) => {
       try {
-        const { date, item_id } = req.query;
+        const { item_id } = req.query;
 
         const query = {};
 
         if (item_id) {
           query.item_id = item_id;
-        }
-
-        if (date) {
-          const start = new Date(date);
-          const end = new Date(date);
-          end.setDate(end.getDate() + 1);
-
-          query["state.date"] = {
-            $gte: start,
-            $lt: end
-          };
         }
 
         const keywords = await db
@@ -84,6 +74,31 @@ async function startServer() {
         res.json(keywords);
 
       } catch (err) {
+        res.status(500).json({ error: err.message });
+      }
+    });
+
+
+    app.get("/keyword-state", async (req, res) => {
+      try {
+        const { keyword_id } = req.query;
+
+        const query = {};
+
+        if (!keyword_id) {
+          return res.status(400).json({ error: "keyword_id 필요" });
+        } else {
+          query._id = new ObjectId(keyword_id)
+        }
+        // const s = new Date(start);
+        // const e = new Date(end);
+        // e.setDate(e.getDate() + 1);
+
+        const states = await db.collection("Keywords").find(query).toArray();
+
+        res.json(states);
+      } catch (err) {
+        console.error(err);
         res.status(500).json({ error: err.message });
       }
     });
@@ -116,15 +131,11 @@ async function startServer() {
           await keywordsCollection.updateOne(
             {
               keyword: row.keyword,
-              date: normalizedDate,
             },
             {
-              $set: {
-                env: row.env ?? "",
-                visible: Boolean(row.visible),
-                mobile: row.mobile ?? "",
-                pc: row.pc ?? "",
-                competition: row.competition ?? "",
+              $setOnInsert: {
+                item_id: row.item_id,
+                keyword: row.keyword,
               },
             },
             { upsert: true }
