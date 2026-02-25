@@ -14,7 +14,6 @@ export default function ItemGridPage() {
   const [popupOpen, setPopupOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editedStates, setEditedStates] = useState([]);
-  const [beforeItem, setBeforeItem] = useState(null);
 
 
   /* =======================
@@ -42,7 +41,7 @@ export default function ItemGridPage() {
         `http://localhost:3000/keywords?item_id=${selectedItem._id}`
       );
       const data = await res.json();
-      console.log(data)
+
       setSelectedKeywords(data);     
     }
     fetchKeywords();
@@ -153,6 +152,7 @@ export default function ItemGridPage() {
   return (
 
     <div style={{ padding: 40, userSelect: "none" }}>
+
       {/* 업로드 */}
       <input type="file" onChange={handleFileUpload} />
 
@@ -191,22 +191,27 @@ export default function ItemGridPage() {
 
       {/* 키워드 */}
 
-      <div style={{ marginTop: 30 }}>
+      <div style={{ 
+        // marginTop: 30,
+        display: "grid",
+        gridTemplateColumns: "repeat(4, 1fr)",
+        gap: 10,
+        marginTop: 20,
+         }}>
         {selectedKeywords.map(kw => (
           <div
             key={kw._id}
             onClick={() => handleClickKeyword(kw)}
             style={{
-              border: "1px solid #ccc",
-              padding: 10,
-              marginBottom: 5,
+              // border: "1px solid #ccc",
+              // padding: 10,
+              // marginBottom: 5,
               cursor: "pointer",
               background:
                 selectedKeyword?._id === kw._id
                   ? "#d0ebff"
                   : "#f5f5f5"
             }}
-
           >
 
             {kw.keyword}

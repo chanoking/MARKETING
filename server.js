@@ -76,7 +76,6 @@ async function startServer() {
     app.get("/keyword-state", async (req, res) => {
       try {
         const { keyword_id } = req.query;
-
         const query = {};
 
         if (!keyword_id) {
