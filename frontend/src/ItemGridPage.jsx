@@ -1,27 +1,21 @@
 import { useEffect, useState } from "react";
 
 export default function ItemGridPage() {
+
+  /* =======================
+     STATE
+  ======================= */
   const [items, setItems] = useState([]);
   const [selectedItem, setSelectedItem] = useState(null);
   const [selectedKeyword, setSelectedKeyword] = useState(null);
   const [keywordStates, setKeywordStates] = useState([]);
   const [selectedKeywords, setSelectedKeywords] = useState([]);
-  const [allKeywords, setAllKeywords] = useState([]);
-
   const [file, setFile] = useState(null);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [searchResults, setSearchResults] = useState([]);
-  const [searchMode, setSearchMode] = useState("item"); // item | global
-
-  const [dateRange, setDateRange] = useState({
-    start: new Date().toISOString().slice(0, 10),
-    end: new Date().toISOString().slice(0, 10),
-  });
-
   const [popupOpen, setPopupOpen] = useState(false);
-
   const [isEditing, setIsEditing] = useState(false);
   const [editedStates, setEditedStates] = useState([]);
+  const [beforeItem, setBeforeItem] = useState(null);
+
 
   /* =======================
      아이템 목록 로드
@@ -30,144 +24,164 @@ export default function ItemGridPage() {
     async function fetchItems() {
       const res = await fetch("http://localhost:3000/items");
       const data = await res.json();
+
       setItems(data);
     }
     fetchItems();
   }, []);
 
+
   /* =======================
-     날짜/아이템 변경 시 키워드 로드
+     키워드 목록 로드
   ======================= */
   useEffect(() => {
     async function fetchKeywords() {
       if (!selectedItem) return;
-      const url = `http://localhost:3000/keywords?item_id=${selectedItem._id}`
-      const res = await fetch(url);
+
+      const res = await fetch(
+        `http://localhost:3000/keywords?item_id=${selectedItem._id}`
+      );
       const data = await res.json();
-      setSelectedKeywords(data);
-      setSearchResults([]);
+      console.log(data)
+      setSelectedKeywords(data);     
     }
     fetchKeywords();
-  }, [selectedItem, dateRange.start]);
+  }, [selectedItem]);
+
 
   /* =======================
      키워드 상태 조회
   ======================= */
   const fetchKeywordStates = async (kw) => {
-    if (!kw) return;
-    try {
-      const res = await fetch(
-        `http://localhost:3000/keyword-state?keyword_id=${kw._id}`
-      );
-      const data = await res.json();
-      setKeywordStates(data);
-    } catch (err) {
-      console.error("키워드 상태 조회 실패:", err);
-    }
+    const res = await fetch(
+      `http://localhost:3000/keyword-state?keyword_id=${kw._id}`
+    );
+    const data = await res.json();
+    const states = data[0]?.state || [];
+
+    setKeywordStates(states);
   };
 
-  /* =======================
-    키워드 클릭
-  ======================= */
-  const handleClickKeyword = async (kw) => {
-    setSelectedKeyword(kw);
-    setPopupOpen(true);
-    await fetchKeywordStates(kw); // kw를 직접 넘김
-  };
 
   /* =======================
      아이템 클릭
   ======================= */
   const handleClickItem = (item) => {
-    if (selectedItem?._id === item._id) {
-      setSelectedItem(null);
-      setSelectedKeywords([]);
+    if (item._id === selectedItem?._id){
+      setSelectedKeywords([])
+      setSelectedItem(null)
     } else {
       setSelectedItem(item);
     }
     setSelectedKeyword(null);
     setKeywordStates([]);
+    setPopupOpen(false);
+    setIsEditing(false);
+  };
+
+
+  /* =======================
+     키워드 클릭
+  ======================= */
+  const handleClickKeyword = async (kw) => {
+    setSelectedKeyword(kw);
+    setPopupOpen(true);
+    setIsEditing(false);
+    await fetchKeywordStates(kw);
   };
 
 
   /* =======================
      파일 업로드
   ======================= */
-  const handleFileUpload = (e) => setFile(e.target.files[0]);
+  const handleFileUpload = (e) => {
+    setFile(e.target.files[0]);
+  };
 
   const uploadExcel = async () => {
-    if (!file) return alert("파일 선택 먼저!");
+    if (!file) {
+      alert("파일 선택");
+      return;
+    }
+
     const formData = new FormData();
+
     formData.append("file", file);
-    const res = await fetch("http://localhost:3000/upload-excel", {
-      method: "POST",
-      body: formData,
-    });
+
+    const res = await fetch(
+      "http://localhost:3000/upload-excel",
+      {
+        method: "POST",
+        body: formData,
+      }
+    );
     const data = await res.json();
-    alert(data.message || "업데이트 완료");
+
+    alert(data.message);
   };
+
 
   /* =======================
-     검색
+     저장
   ======================= */
-  const handleSearch = async () => {
-    if (!searchTerm) return alert("검색어를 입력하세요");
-    let source = searchMode === "global" ? allKeywords : selectedKeywords;
-    const results = source.filter((kw) =>
-      kw.keyword.toLowerCase().includes(searchTerm.toLowerCase())
+
+  const handleSave = async () => {
+    const res = await fetch(
+      "http://localhost:3000/keyword-state-update",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          keyword_id: selectedKeyword._id,
+          states: editedStates
+        })
+      }
     );
-    setSearchResults(results);
+    const data = await res.json();
+
+    alert(data.message);
+    setKeywordStates(editedStates);
+    setIsEditing(false);
   };
 
+
+  /* =======================
+     UI
+  ======================= */
   return (
-    <div style={{ padding: 100, userSelect: "none" }}>
-      {/* 파일 업로드 */}
-      <div style={{ marginBottom: 20 }}>
-        <input type="file" accept=".xlsx, .xls" onChange={handleFileUpload} />
-        <button onClick={uploadExcel} style={{ marginLeft: 8 }}>
-          UPDATE
-        </button>
-      </div>
 
-      {/* 검색 */}
-      <div style={{ marginBottom: 20 }}>
-        <select
-          value={searchMode}
-          onChange={(e) => setSearchMode(e.target.value)}
-        >
-          <option value="item">아이템 내 검색</option>
-          <option value="global">전체 검색</option>
-        </select>
-        <input
-          type="text"
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          placeholder="키워드 검색"
-          style={{ marginLeft: 10 }}
-        />
-        <button onClick={handleSearch} style={{ marginLeft: 8 }}>
-          검색
-        </button>
-      </div>
+    <div style={{ padding: 40, userSelect: "none" }}>
+      {/* 업로드 */}
+      <input type="file" onChange={handleFileUpload} />
 
-      {/* 아이템 그리드 */}
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(8, 1fr)",
-          gap: 12,
-        }}
-      >
-        {items.map((item) => (
+      <button onClick={uploadExcel}>
+        upload
+      </button>
+
+      {/* 아이템 */}
+      <div style={{
+        display: "grid",
+        gridTemplateColumns: "repeat(6,1fr)",
+        gap: 10,
+        marginTop: 30
+
+      }}>
+
+
+        {items.map(item => (
           <div
             key={item._id}
             onClick={() => handleClickItem(item)}
             style={{
               border: "1px solid #ccc",
-              padding: 12,
-              textAlign: "center",
+              padding: 10,
               cursor: "pointer",
-              background: selectedItem?._id === item._id ? "#e6f3ff" : "#fff",
+              background:
+                selectedItem?._id === item._id
+                  ? "#e6f3ff"
+                  : "white"
             }}
           >
             {item.item}
@@ -175,143 +189,225 @@ export default function ItemGridPage() {
         ))}
       </div>
 
-      {/* 키워드 리스트 */}
-      {(selectedItem || searchResults.length > 0) && (
-        <div style={{ marginTop: 20 }}>
-          {(searchResults.length > 0 ? searchResults : selectedKeywords).map(
-            (kw) => (
+      {/* 키워드 */}
+
+      <div style={{ marginTop: 30 }}>
+        {selectedKeywords.map(kw => (
+          <div
+            key={kw._id}
+            onClick={() => handleClickKeyword(kw)}
+            style={{
+              border: "1px solid #ccc",
+              padding: 10,
+              marginBottom: 5,
+              cursor: "pointer",
+              background:
+                selectedKeyword?._id === kw._id
+                  ? "#d0ebff"
+                  : "#f5f5f5"
+            }}
+
+          >
+
+            {kw.keyword}
+
+          </div>
+        ))}
+      </div>
+
+
+
+      {/* 팝업 */}
+
+      {popupOpen && selectedKeyword && (
+
+        <div style={{
+          position: "fixed",
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: "rgba(0,0,0,0.5)",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center"
+
+        }}>
+
+          <div style={{
+            background: "white",
+            padding: 20,
+            width: "70%",
+            maxHeight: "80vh",
+            overflow: "auto"
+          }}>
+
+            <button onClick={() => {
+              setPopupOpen(false);
+              setIsEditing(false);
+            }}>
+              닫기
+            </button>
+
+            <h3>
+              {selectedKeyword.keyword}
+            </h3>
+
+
+
+            {/* header */}
+
+            <div style={{
+
+              display: "grid",
+
+              gridTemplateColumns:
+                "1fr 1fr 1fr 1fr 1fr 1fr",
+
+              fontWeight: "bold"
+
+            }}>
+              <div>Date</div>
+              <div>Mobile</div>
+              <div>PC</div>
+              <div>Competition</div>
+              <div>Exposure</div>
+              <div>Env</div>
+            </div>
+
+            {/* body */}
+            {keywordStates.map((state, idx) => (
               <div
-                key={kw._id}
-                onClick={() => handleClickKeyword(kw)}
+                key={idx}
                 style={{
-                  border: "1px solid #ccc",
-                  padding: 8,
-                  marginBottom: 6,
-                  display: "flex",
-                  gap: 12,
-                  background:
-                    selectedKeyword?._id === kw._id ? "#d0ebff" : "#f5f5f5",
-                  cursor: "pointer",
+                  display: "grid",
+                  gridTemplateColumns:
+                    "1fr 1fr 1fr 1fr 1fr 1fr",
+                  marginTop: 5
                 }}
+
               >
-                <span>{kw.keyword}</span>
+
+                {isEditing ? (
+                  <>
+                    <input
+                      type="date"
+                      value={
+                        editedStates[idx]?.date?.slice(0,10) || ""
+                      }
+                      onChange={(e) => {
+                        const copy = [...editedStates];
+                        copy[idx].date = e.target.value;
+                        setEditedStates(copy);
+                      }}
+
+                    />
+
+                    <input
+                      value={editedStates[idx]?.mobile || ""}
+                      onChange={(e) => {
+                        const copy = [...editedStates];
+                        copy[idx].mobile =
+                          Number(e.target.value);
+                        setEditedStates(copy);
+                      }}
+
+                    />
+
+                    <input
+                      value={editedStates[idx]?.pc || ""}
+                      onChange={(e) => {
+                        const copy = [...editedStates];
+                        copy[idx].pc =
+                          Number(e.target.value);
+                        setEditedStates(copy);
+                      }}
+
+                    />
+
+                    <input
+
+                      value={
+                        editedStates[idx]?.competition || ""
+                      }
+                      onChange={(e) => {
+                        const copy = [...editedStates];
+                        copy[idx].competition =
+                          e.target.value;
+                        setEditedStates(copy);
+                      }}
+                    />
+
+                    <input
+                      value={
+                        editedStates[idx]?.exposure || ""
+                      }
+                      onChange={(e) => {
+                        const copy = [...editedStates];
+                        copy[idx].exposure =
+                          Number(e.target.value);
+                        setEditedStates(copy);
+                      }}
+
+                    />
+
+                    <input
+                      value={editedStates[idx]?.env || ""}
+                      onChange={(e) => {
+                        const copy = [...editedStates];
+                        copy[idx].env =
+                          e.target.value;
+                        setEditedStates(copy);
+                      }}
+
+                    />
+                  </>
+
+                ) : (
+
+                  <>
+
+                    <div>{state.date?.slice(0,10)}</div>
+                    <div>{state.mobile}</div>
+                    <div>{state.pc}</div>
+                    <div>{state.competition}</div>
+                    <div>{state.exposure}</div>
+                    <div>{state.env}</div>
+
+                  </>
+
+                )}
+
               </div>
-            )
-          )}
 
-          {searchResults.length === 0 && searchTerm && (
-            <div>검색 결과가 없습니다.</div>
-          )}
+            ))}
 
-          {/* 날짜 범위 선택 */}
-          {/* {selectedKeyword && (
-            <div style={{ marginTop: 20 }}>
-              <input
-                type="date"
-                value={dateRange.start}
-                onChange={(e) =>
-                  setDateRange({ ...dateRange, start: e.target.value })
-                }
-              />
-              ~
-              <input
-                type="date"
-                value={dateRange.end}
-                onChange={(e) =>
-                  setDateRange({ ...dateRange, end: e.target.value })
-                }
-              />
-              <button onClick={fetchKeywordStates} style={{ marginLeft: 8 }}>
-                조회
+            {/* 수정 */}
+            {!isEditing ? (
+
+              <button
+
+                onClick={() => {
+                  setEditedStates(
+                    keywordStates.map(s => ({...s}))
+                  );
+                  setIsEditing(true);
+                }}
+
+              >
+                수정
               </button>
-            </div>
-          )} */}
+            ) : (
+              <button onClick={handleSave}>
+                저장
+              </button>
+            )}
 
-          {/* 선택 키워드 상태값 */}
-          {popupOpen && selectedKeyword && (
-            <div
-              className="modal-overlay" 
-              style={{
-                position: "fixed",
-                top: 0,
-                left: 0,
-                right: 0,
-                bottom: 0,
-                background: "rgba(0,0,0,0.5)",
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "center"
-              }}
-            >
-            <div
-              className="modal-content"
-              style={{
-                width: "66%",
-                maxHeight: "80vh",
-                background: "#fff",
-                padding: "20px",
-                overflowY: "auto",
-                borderRadius: "8px"
-              }}
-            >
-                <button onClick={() => setPopupOpen(false)}>닫기</button>
-                <h4>{keywordStates[0].keyword}</h4>
-                <div
-                  style={{
-                    display: "grid",
-                    gridTemplateColumns: "1fr 1fr 1fr 1fr 1fr 1fr"
-                  }}
-                >
-                  <div>Date</div>
-                  <div>Mobile</div>
-                  <div>PC</div>
-                  <div>Competition</div>
-                  <div>Exposure</div>
-                  <div>Env</div>
-                 </div> 
-                {keywordStates.map((kw) => (
-                  <div key={kw._id}>
-                    {kw.state.map((s, idx) => (
-                      <div key={idx} style={{ marginBottom: 10}}>
-                        <input
-                          type="date"
-                          value={s.date.slice(0, 10)}
-                          onChange={(e) => {
-                            const newStates = [...keywordStates];
-                            newState[idx].date = e.target.value;
-                            setKeywordStates(newStates);
-                          }}
-                        />
-                        <input
-                          type="number"
-                          value={s.mobile}
-                          onChange={(e) => {
-                            const newStates = [...keywordsStates];
-                            newStates[idx].mobile = Number(e.target.value);
-                            setKeywordStates(newStates);
-                          }}
-                          placeholder="모바일"
-                        />
-                        <input
-                          type="number"
-                          value={s.pc}
-                          onChange={(e) => {
-                            const newStates = [...keywordsStates]
-                            newStates[idx].pc = Number(e.target.value)
-                            setKeywordStates(newStates)
-                          }}
-                          placeholder="PC"
-                        />
-                       
-                      </div>
-                    ))}
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
+          </div>
         </div>
       )}
     </div>
+
   );
+
 }

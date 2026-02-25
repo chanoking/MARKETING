@@ -37,29 +37,23 @@ async function startServer() {
     ========================= */
     app.use(express.static(path.join(__dirname, "frontend")));
 
-    /* =========================
-       ITEMS
-    ========================= */
     app.get("/items", async (req, res) => {
       try {
         const items = await db
           .collection("Items")
           .find({}, { projection: { item: 1 } })
           .toArray();
+
         res.json(items);
       } catch (err) {
         res.status(500).json({ error: err.message });
       }
     });
 
-    /* =========================
-       KEYWORDS (date / item filter)
-       /keywords?date=YYYY-MM-DD&itemId=xxx
-    ========================= */
+
     app.get("/keywords", async (req, res) => {
       try {
         const { item_id } = req.query;
-
         const query = {};
 
         if (item_id) {
@@ -90,9 +84,6 @@ async function startServer() {
         } else {
           query._id = new ObjectId(keyword_id)
         }
-        // const s = new Date(start);
-        // const e = new Date(end);
-        // e.setDate(e.getDate() + 1);
 
         const states = await db.collection("Keywords").find(query).toArray();
 
@@ -152,6 +143,23 @@ async function startServer() {
         console.error(err);
         res.status(500).json({ error: err.message });
       }
+    });
+
+    app.post("/keyword-state-update", async (req, res) => {
+      const { keyword_id, states } = req.body;
+      await db.collection("keywords").updateOne(
+        { _id: new ObjectId(keyword_id) },
+        {
+          $set: {
+            state: states
+          }
+        }
+      );
+
+      res.json({
+        message: "업데이트 완료"
+      });
+
     });
 
     /* =========================
