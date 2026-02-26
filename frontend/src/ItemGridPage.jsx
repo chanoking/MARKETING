@@ -192,7 +192,6 @@ export default function ItemGridPage() {
       {/* 키워드 */}
 
       <div style={{ 
-        // marginTop: 30,
         display: "grid",
         gridTemplateColumns: "repeat(4, 1fr)",
         gap: 10,
@@ -203,9 +202,6 @@ export default function ItemGridPage() {
             key={kw._id}
             onClick={() => handleClickKeyword(kw)}
             style={{
-              // border: "1px solid #ccc",
-              // padding: 10,
-              // marginBottom: 5,
               cursor: "pointer",
               background:
                 selectedKeyword?._id === kw._id
@@ -219,7 +215,6 @@ export default function ItemGridPage() {
           </div>
         ))}
       </div>
-
 
 
       {/* 팝업 */}
@@ -246,31 +241,60 @@ export default function ItemGridPage() {
             maxHeight: "80vh",
             overflow: "auto"
           }}>
-
-            <button onClick={() => {
-              setPopupOpen(false);
-              setIsEditing(false);
+            <div style={{
+              display: "grid",
+              gridTemplateColumns: "1fr 1fr",
+              width: "20%",
+              gap: "10px"
             }}>
-              닫기
-            </button>
-
+              <button onClick={() => {
+                setPopupOpen(false);
+                setIsEditing(false);
+              }} 
+              style={{
+                backgroundColor: "rgba(0, 102, 204, 0.7)",
+                color: "white"
+                }}
+                >
+                닫기
+              </button>
+            {/* 수정 */}
+            {!isEditing ? (
+            
+              <button
+                onClick={() => {
+                  setEditedStates(
+                    keywordStates.map(s => ({...s}))
+                  );
+                  setIsEditing(true);
+                }} style={{
+                  backgroundColor: "rgba(0, 102, 204, 0.7)",
+                  color: "white"
+                }}>
+                  수정
+              </button>
+            ) : (
+              <button onClick={handleSave}>
+                저장
+              </button>
+            )}
+            </div>
             <h3>
               {selectedKeyword.keyword}
             </h3>
 
 
-
             {/* header */}
 
             <div style={{
-
+              
               display: "grid",
-
+              
               gridTemplateColumns:
-                "1fr 1fr 1fr 1fr 1fr 1fr",
-
+              "1fr 1fr 1fr 1fr 1fr 1fr",
+              
               fontWeight: "bold"
-
+              
             }}>
               <div>Date</div>
               <div>Mobile</div>
@@ -283,12 +307,13 @@ export default function ItemGridPage() {
             {/* body */}
             {keywordStates.map((state, idx) => (
               <div
-                key={idx}
-                style={{
-                  display: "grid",
-                  gridTemplateColumns:
-                    "1fr 1fr 1fr 1fr 1fr 1fr",
-                  marginTop: 5
+              key={idx}
+              style={{
+                display: "grid",
+                gridTemplateColumns:
+                "1fr 1fr 1fr 1fr 1fr 1fr",
+                  marginTop: 5,
+                  marginBottom: 5
                 }}
 
               >
@@ -305,7 +330,6 @@ export default function ItemGridPage() {
                         copy[idx].date = e.target.value;
                         setEditedStates(copy);
                       }}
-
                     />
 
                     <input
@@ -316,7 +340,6 @@ export default function ItemGridPage() {
                           Number(e.target.value);
                         setEditedStates(copy);
                       }}
-
                     />
 
                     <input
@@ -327,11 +350,9 @@ export default function ItemGridPage() {
                           Number(e.target.value);
                         setEditedStates(copy);
                       }}
-
                     />
 
                     <input
-
                       value={
                         editedStates[idx]?.competition || ""
                       }
@@ -364,7 +385,6 @@ export default function ItemGridPage() {
                           e.target.value;
                         setEditedStates(copy);
                       }}
-
                     />
                   </>
 
@@ -387,26 +407,6 @@ export default function ItemGridPage() {
 
             ))}
 
-            {/* 수정 */}
-            {!isEditing ? (
-
-              <button
-
-                onClick={() => {
-                  setEditedStates(
-                    keywordStates.map(s => ({...s}))
-                  );
-                  setIsEditing(true);
-                }}
-
-              >
-                수정
-              </button>
-            ) : (
-              <button onClick={handleSave}>
-                저장
-              </button>
-            )}
 
           </div>
         </div>

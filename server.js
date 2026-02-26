@@ -114,9 +114,7 @@ async function startServer() {
 
         for (const row of rows) {
           // 최소 유효성 검사
-          if (!row.keyword || !row.date) continue;
-
-          const normalizedDate = String(row.date).slice(0, 10);
+          if (!row.keyword || !row.item_id) continue;
 
           await keywordsCollection.updateOne(
             {
@@ -146,7 +144,8 @@ async function startServer() {
 
     app.post("/keyword-state-update", async (req, res) => {
       const { keyword_id, states } = req.body;
-      await db.collection("keywords").updateOne(
+      console.log(states)
+      await db.collection("Keywords").updateOne(
         { _id: new ObjectId(keyword_id) },
         {
           $set: {
