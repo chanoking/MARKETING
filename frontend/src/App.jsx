@@ -1,7 +1,18 @@
 import ItemGridPage from "./ItemGridPage";
+import BlogPage from "./BlogPage"
+import KeychalPage from "./KeychalPage"
+import { BrowserRouter, Routes, Route } from "react-router-dom"
 
 function App() {
-  return <ItemGridPage />;
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<ItemGridPage />} />
+        <Route path="/blog" element={<BlogPage />} />
+        <Route path="/keychal" element={<KeychalPage />} />
+      </Routes>
+    </BrowserRouter>
+  );
 }
 
 export default App;

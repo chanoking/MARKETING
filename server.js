@@ -37,7 +37,7 @@ async function startServer() {
     ========================= */
     app.use(express.static(path.join(__dirname, "frontend")));
 
-    app.get("/items", async (req, res) => {
+    app.get("/blog/items", async (req, res) => {
       try {
         const items = await db
           .collection("Items")
@@ -51,7 +51,7 @@ async function startServer() {
     });
 
 
-    app.get("/keywords", async (req, res) => {
+    app.get("/blog/keywords", async (req, res) => {
       try {
         const { item_id } = req.query;
         const query = {};
@@ -73,7 +73,7 @@ async function startServer() {
     });
 
 
-    app.get("/keyword-state", async (req, res) => {
+    app.get("/blog/keyword-state", async (req, res) => {
       try {
         const { keyword_id } = req.query;
         const query = {};
@@ -84,9 +84,9 @@ async function startServer() {
           query._id = new ObjectId(keyword_id)
         }
 
-        const states = await db.collection("Keywords").find(query).toArray();
+        const keyword = await db.collection("Keywords").find(query).toArray();
 
-        res.json(states);
+        res.json(keyword);
       } catch (err) {
         console.error(err);
         res.status(500).json({ error: err.message });
@@ -96,7 +96,7 @@ async function startServer() {
     /* =========================
        EXCEL UPLOAD
     ========================= */
-    app.post("/upload-excel", async (req, res) => {
+    app.post("/blog/upload-excel", async (req, res) => {
       try {
         if (!req.files || !req.files.file) {
           return res.status(400).json({ error: "No file uploaded" });
@@ -107,7 +107,6 @@ async function startServer() {
         const sheetName = workbook.SheetNames[0];
         const sheet = workbook.Sheets[sheetName];
         const rows = xlsx.utils.sheet_to_json(sheet);
-
         const keywordsCollection = db.collection("Keywords");
 
         let successCount = 0;
@@ -123,7 +122,6 @@ async function startServer() {
             {
               $setOnInsert: {
                 item_id: row.item_id,
-                keyword: row.keyword,
               },
             },
             { upsert: true }
@@ -142,9 +140,9 @@ async function startServer() {
       }
     });
 
-    app.post("/keyword-state-update", async (req, res) => {
+    app.post("/blog/keyword-state-update", async (req, res) => {
       const { keyword_id, states } = req.body;
-      console.log(states)
+      
       await db.collection("Keywords").updateOne(
         { _id: new ObjectId(keyword_id) },
         {
@@ -160,6 +158,7 @@ async function startServer() {
 
     });
 
+    app.get("/keychal/")
     /* =========================
        SPA Fallback
     ========================= */
