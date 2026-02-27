@@ -37,7 +37,7 @@ export default function ItemGridPage() {
             color: "white",
             borderRadius: "5px"
           }}
-          onClick={() => console.log("키챌")}
+          onClick={() => navigate('/keychal')}
         >
           키챌
         </div>

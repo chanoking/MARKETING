@@ -157,8 +157,18 @@ async function startServer() {
       });
 
     });
+/*------------------------------keychal down here---------------------------*/
+    
+app.get("/keychal/influencers", async (req, res) => {
+      try {
+        const influencers = await db.collection("Keychal_Influencers").find({}).toArray();
+        res.json(influencers);
+      } catch (err) {
+        res.status(500).json({ message: err.message });
+      }
+    });
+    
 
-    app.get("/keychal/")
     /* =========================
        SPA Fallback
     ========================= */
