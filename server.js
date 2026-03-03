@@ -167,6 +167,19 @@ app.get("/keychal/influencers", async (req, res) => {
         res.status(500).json({ message: err.message });
       }
     });
+
+app.get("/keychal/keywords", async (req, res) => {
+  try {
+    const {influencer_id} = req.query;
+    const keywords = await db.collection("Keychal_Keywords")
+                              .find({influencer_id})
+                              .toArray();
+
+    res.json(keywords)
+  } catch (err) {
+    res.status(500).json({ message: err.message })
+  }
+})
     
 
     /* =========================
