@@ -159,27 +159,44 @@ async function startServer() {
     });
 /*------------------------------keychal down here---------------------------*/
     
-app.get("/keychal/influencers", async (req, res) => {
+    app.get("/keychal/influencers", async (req, res) => {
+          try {
+            const influencers = await db.collection("Keychal_Influencers").find({}).toArray();
+            res.json(influencers);
+          } catch (err) {
+            res.status(500).json({ message: err.message });
+          }
+        });
+
+    app.get("/keychal/keywords", async (req, res) => {
       try {
-        const influencers = await db.collection("Keychal_Influencers").find({}).toArray();
-        res.json(influencers);
+        const {influencer_id} = req.query;
+        const keywords = await db.collection("Keychal_Keywords")
+                                  .find({influencer_id})
+                                  .toArray();
+
+        res.json(keywords)
+      } catch (err) {
+        res.status(500).json({ message: err.message })
+      }
+    })
+
+    app.get("/keychal/states", async (req, res) => {
+      try {
+        const { keyword } = req.query;
+
+        if (!keyword) return res.status(400).json({ message: "keyword required" });
+
+        const states = await db
+          .collection("Keychal_Keywords")
+          .find({ keyword })
+          .toArray();
+
+        res.json(states);
       } catch (err) {
         res.status(500).json({ message: err.message });
       }
     });
-
-app.get("/keychal/keywords", async (req, res) => {
-  try {
-    const {influencer_id} = req.query;
-    const keywords = await db.collection("Keychal_Keywords")
-                              .find({influencer_id})
-                              .toArray();
-
-    res.json(keywords)
-  } catch (err) {
-    res.status(500).json({ message: err.message })
-  }
-})
     
 
     /* =========================
