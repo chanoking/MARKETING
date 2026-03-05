@@ -181,14 +181,14 @@ async function startServer() {
       }
     })
 
-    app.get("/keychal/states", async (req, res) => {
+    app.get("/keychal/keyword/states", async (req, res) => {
       try {
         const { keyword } = req.query;
 
         if (!keyword) return res.status(400).json({ message: "keyword required" });
 
         const states = await db
-          .collection("Keychal_Keywords")
+          .collection("Keychal_States")
           .find({ keyword })
           .toArray();
 
@@ -197,6 +197,35 @@ async function startServer() {
         res.status(500).json({ message: err.message });
       }
     });
+
+    app.get("/keychal/states", async (req, res) => {
+      try{
+        const data = await db
+          .collection("Keychal_States")
+          .find({})
+          .toArray();
+
+        const result = {};
+        let cnt = 0;
+
+        data.forEach(item => {
+          let {date, rank} = item;
+          
+          cnt++;
+          
+          if (!result[date]) result[date] = 0;
+
+          if (rank > 0) result[date] += 1;
+        })
+
+        for(let date in result){
+          result[date] = `${result[date]} / ${cnt}`;
+        }
+        res.json(result)
+      }catch(err){
+        res.status(500).json({message: err.message})
+      }
+    })
     
 
     /* =========================

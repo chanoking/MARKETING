@@ -1,0 +1,25 @@
+.my-calendar {
+    width: 610px;
+    height: 450px;
+    border: 1px solid #ccc;
+}
+
+.my-calendar .react-calendar__tile {
+    height: 60px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    font-size: 14px;
+}
+
+.tile-note{
+    font-size: 10px;
+    color: red;
+    margin-top: 2px;
+    text-align: center;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    max-width: 100%;
+}

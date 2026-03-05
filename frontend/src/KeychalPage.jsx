@@ -1,9 +1,12 @@
 import { useEffect, useState } from "react";
 import React from "react";
+import Calendar from "react-calendar";
+import "react-calendar/dist/Calendar.css";
+import './KeychalPage.css'
 
 export default function KeychalPage() {
   const today = new Date().toISOString().split("T")[0];
-
+  
   const [influencers, setInfluencers] = useState([]);
   const [selectedInflKeywords, setSelectedInflKeywords] = useState([]);
   const [popupOpen, setPopupOpen] = useState(false);
@@ -13,7 +16,11 @@ export default function KeychalPage() {
   const [popupOpenForState, setPopupOpenForState] = useState(false);
   const [startDate, setStartDate] = useState(today);
   const [endDate, setEndDate] = useState(today);
-
+  const [date, setDate] = useState(new Date());
+  const [visibleSum, setVisibleSum] = useState({});
+  const [selectedDate, setSelectedDate] = useState(null);
+  const [showPopup, setShowPopup] = useState(null);
+  
   useEffect(() => {
     async function fetchInfls() {
       const res = await fetch("http://localhost:3000/keychal/influencers");
@@ -22,6 +29,21 @@ export default function KeychalPage() {
     }
     fetchInfls();
   }, []);
+  
+  useEffect(() => {
+    const fetchSums = async () => {
+      const res = await fetch("http://localhost:3000/keychal/states");
+      const data = await res.json();
+    
+      setVisibleSum(data);
+    }
+    fetchSums()
+  }, [])
+
+  const handleClickDay = (value) => {
+    setSelectedDate(value);
+    setShowPopup(true);
+  }
 
   const handleStartChange = (e) => {
     const value = e.target.value;
@@ -51,12 +73,13 @@ export default function KeychalPage() {
 
   const fetchStateForKeyword = async (keyword) => {
     const res = await fetch(
-      `http://localhost:3000/keychal/states?keyword=${keyword}`
+      `http://localhost:3000/keychal/keyword/states?keyword=${keyword}`
     );
     const data = await res.json();
-    console.log(data)
-    setKeywordStates(data[0].state);
+
+    setKeywordStates(data);
   };
+
 
   const handleClickInfl = async (infl) => {
     setSelectedInfl(infl);
@@ -71,7 +94,10 @@ export default function KeychalPage() {
   };
 
   // 공통 스타일
-  const buttonStyle = { height: "22px", fontSize: "12px", padding: "0px", width: "60px" };
+  const buttonStyle = { height: "22px", fontSize: "12px", padding: "0px",
+     width: "60px", border:"1px solid #000",
+    margin: 2 };
+
   const overlayStyle = {
     position: "fixed",
     inset: 0,
@@ -80,6 +106,7 @@ export default function KeychalPage() {
     justifyContent: "center",
     alignItems: "center",
   };
+
   const popupInnerStyle = {
     background: "white",
     padding: 20,
@@ -91,27 +118,83 @@ export default function KeychalPage() {
     gap: "20px",
   };
 
+  const stateStyle = {
+    background: "white",
+    padding: 20,
+    margin: 20,
+    display: "grid",
+    gridTemplateColumns: "repeat(6, 1fr)",
+    justifyContent: "center",
+    alignItems: "center",
+    gap: 60
+  }
+
+  const popupStyle = {
+    position: "fixed",
+    top: "50%",
+    left: "50%",
+    transform: "translate(-50%, -50%)",
+    background: "white",
+    padding: "20px",
+    border: "1px solid #ccc",
+    zIndex: 1000,
+};
   return (
     <div style={{ padding: 40, userSelect: "none" }}>
-      {/* 인플루언서 리스트 */}
-      <div>
-        {influencers.map((infl) => (
-          <div
-            key={infl._id}
-            onClick={() => handleClickInfl(infl)}
-            style={{
-              border: "2px solid #ccc",
-              padding: 10,
-              cursor: "pointer",
-              marginBottom: "10px",
-              background: selectedInfl?._id === infl._id ? "#e6f3ff" : "white",
-              fontWeight: "bold",
-            }}
-          >
-            {infl.influencer}
-          </div>
-        ))}
-      </div>
+
+        <div style={{
+            display:"flex",
+            
+        }}>
+
+            <div style={{marginRight: 20}}>
+                {influencers.map((infl) => (
+                    <div
+                      key={infl._id}
+                      onClick={() => handleClickInfl(infl)}
+                      style={{
+                        border: "2px solid #ccc",
+                        padding: 10,
+                        cursor: "pointer",
+                        marginBottom: "10px",
+                        background: selectedInfl?._id === infl._id ? "#e6f3ff" : "white",
+                        fontWeight: "bold",
+                      }}
+                    >
+                      {infl.influencer}
+                    </div>
+                ))}
+            </div>
+            
+            <div>
+              <Calendar
+                value={date}
+                onChange={(d) => setDate(d)}
+                className="my-calendar"
+                locale="en-US"
+                onClickDay={handleClickDay}
+                tileContent={({date, view}) => {
+                  if (view === "month") {
+                    const copyDate = new Date(date);
+                    copyDate.setDate(copyDate.getDate() + 1)
+                    const d = copyDate.toISOString().split("T")[0];
+                    const note = visibleSum[d];
+                    return note ? (
+                      <div className="tile-note">{note}</div>
+                    ) : null
+                  }
+                }}
+              />
+
+               {showPopup && (
+                <div style={popupStyle}>
+                  <p>{selectedDate.toDateString()}</p>
+                  <button onClick={() => setShowPopup(false)}>닫기</button>
+                </div>
+              )}   
+            </div>
+
+        </div>
 
       {/* 팝업 */}
       {popupOpen && selectedInfl && (
@@ -139,12 +222,18 @@ export default function KeychalPage() {
                   <div style={{ fontWeight: 500, fontSize: "14px" }}>{k.brand}</div>
                 </React.Fragment>
               ))}
-
-              <button style={buttonStyle} onClick={() => setPopupOpen(false)}>
-                cancel
-              </button>
-              <button style={buttonStyle}>수정</button>
-              <button style={buttonStyle}>add</button>
+      
+              <div>
+                <button style={buttonStyle} onClick={() => {
+                    setPopupOpen(false)
+                    setSelectedInfl(null)
+                    }}>
+                    cancel
+                </button>
+                <button style={buttonStyle}>FIX</button>
+                <button style={buttonStyle}>ADD</button>
+              </div>
+      
             </div>
           </div>
 
@@ -152,9 +241,31 @@ export default function KeychalPage() {
           {selectedKeyword && popupOpenForState && (
             <div style={{ ...overlayStyle, zIndex: 1000 }}>
               <div style={{ background: "white", width: "70%", maxHeight: "80vh", overflow: "auto" }}>
-                {/* 키워드 상태 내용 여기에 넣기 */}
+          
                 {keywordStates.map((state) => (
                     <>
+                    <div style={{
+                        fontSize: 17,
+                        fontStyle: "Arial, sans-serif",
+                        padding: 5,
+                        fontWeight: 600,
+                        color: "rgba(0,0,0,0.6)",
+                        display: "flex",
+                    }}>
+                        <div>{selectedKeyword}</div>
+                        <div
+                            style={{
+                                marginLeft: 680,
+                                border: "1px groove #ccc",
+                                padding: "0px 2px 5px 1px", 
+                                height: 20,
+                                cursor: "pointer"}}
+                            onClick={()=>{
+                                setSelectedKeyword(false)
+                                setPopupOpenForState(false)
+                            }}
+                        >X</div>
+                    </div>
                     <div
                         style={{
                             background: "white",
@@ -199,19 +310,9 @@ export default function KeychalPage() {
                         </div>
 
                     </div>
-
-                    <div
-                        style={{
-                            background: "white",
-                            padding: 20,
-                            margin: 20,
-                            display: "flex",
-                            justifyContent: "center",
-                            alignItems: "center",
-                            gap: 60,
-                            fontWeight: 600
-                        }}
-                    >
+                    
+                    
+                    <div style={{...stateStyle, fontWeight: 600}}>
                         <div> 날짜 </div>
                         <div> MOB </div>
                         <div> PC </div>
@@ -219,6 +320,20 @@ export default function KeychalPage() {
                         <div> Competition </div>
                         <div> 순위 </div>
                     </div>
+                    
+                    <div style={{...stateStyle, fontSize:14, fontWeight: 500}}>
+                        {keywordStates.map(state => (
+                        <>
+                            <div>{state?.date.split("T")[0]}</div>
+                            <div>{state?.mobile.toLocaleString()}</div>
+                            <div>{state?.pc.toLocaleString()}</div>
+                            <div>{state?.y.toLocaleString()}</div>
+                            <div>{state?.competition}</div>
+                            <div>{state?.rank}</div>
+                        </>
+                        ))}
+                    </div>
+
                     </>
                     
                 ))}
@@ -228,5 +343,7 @@ export default function KeychalPage() {
         </>
       )}
     </div>
+    
   );
 }
+
