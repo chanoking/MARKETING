@@ -20,6 +20,7 @@ export default function KeychalPage() {
   const [visibleSum, setVisibleSum] = useState({});
   const [selectedDate, setSelectedDate] = useState(null);
   const [showPopup, setShowPopup] = useState(null);
+  const [states, setStates] = useState([[], []]);
   
   useEffect(() => {
     async function fetchInfls() {
@@ -32,7 +33,7 @@ export default function KeychalPage() {
   
   useEffect(() => {
     const fetchSums = async () => {
-      const res = await fetch("http://localhost:3000/keychal/states");
+      const res = await fetch("http://localhost:3000/keychal/states/cal");
       const data = await res.json();
     
       setVisibleSum(data);
@@ -40,9 +41,40 @@ export default function KeychalPage() {
     fetchSums()
   }, [])
 
-  const handleClickDay = (value) => {
-    setSelectedDate(value);
+  const fetchSeparateKeywords = async (date) => {
+    const res = await fetch(`http://localhost:3000/keychal/statesall?date=${date}`);
+    const data = await res.json();  
+    // console.log(data);
+    
+    const result = [[], []]
+
+    data.forEach((doc) => {
+      if(date === doc["date"]){
+        if(doc["rank"] > 0){
+          result[0].push(doc["keyword"]);
+        }else{
+          result[1].push(doc["keyword"]);
+        }
+      }
+    })
+
+    // console.log(result);
+    
+    setStates(result)
+  }
+  const handleClickDay = async (date) => { 
+    let copyDate = new Date(date);
+    
+    copyDate.setDate(copyDate.getDate() + 1);
+    
+    copyDate = copyDate.toISOString().split("T")[0];
+
+    // console.log(copyDate);
+    
+    setSelectedDate(copyDate);
     setShowPopup(true);
+
+    await fetchSeparateKeywords(copyDate)
   }
 
   const handleStartChange = (e) => {
@@ -92,6 +124,8 @@ export default function KeychalPage() {
     setPopupOpenForState(true);
     await fetchStateForKeyword(keyword);
   };
+
+ 
 
   // 공통 스타일
   const buttonStyle = { height: "22px", fontSize: "12px", padding: "0px",
@@ -188,8 +222,41 @@ export default function KeychalPage() {
 
                {showPopup && (
                 <div style={popupStyle}>
-                  <p>{selectedDate.toDateString()}</p>
-                  <button onClick={() => setShowPopup(false)}>닫기</button>
+                  <h1 style={{fontSize:15}}>{selectedDate}</h1>
+                  
+                  <div className="header-container">
+                    <h2>Positive</h2>
+                    <h2>Negative</h2>
+                  </div>
+
+                  <div className="keywords-container">
+                    
+                    <div className="keywords">
+                      {states[0]?.map(keyword => (
+                        <p key={keyword}
+                        style={{padding: 0, margin: "2px 0"}}>{keyword}</p>
+                      ))}
+                    </div>
+
+                    <div className="keywords">
+                      {states[1]?.map(keyword => (
+                        <p key={keyword}
+                        style={{padding: 0, margin: "2px 0"}}>{keyword}</p>
+                      ))}
+                    </div>
+
+                  </div>
+
+                  <button onClick={() => setShowPopup(false)}
+                    style={{
+                      display: "flex",
+                      justifyContent: "center",
+                      alignItems: "center",
+                      width: 45, 
+                      height: 20, 
+                      padding: 10, 
+                      fontSize: 10, 
+                      textAlign: "center"}}>닫기</button>
                 </div>
               )}   
             </div>

@@ -198,7 +198,7 @@ async function startServer() {
       }
     });
 
-    app.get("/keychal/states", async (req, res) => {
+    app.get("/keychal/states/cal", async (req, res) => {
       try{
         const data = await db
           .collection("Keychal_States")
@@ -206,22 +206,33 @@ async function startServer() {
           .toArray();
 
         const result = {};
-        let cnt = 0;
 
         data.forEach(item => {
           let {date, rank} = item;
           
-          cnt++;
-          
-          if (!result[date]) result[date] = 0;
-
-          if (rank > 0) result[date] += 1;
+          if (!result[date]) {
+            result[date] = [0, 1];
+          }else{
+            result[date][1] += 1
+          }
+          if (rank > 0) result[date][0] += 1;
         })
 
         for(let date in result){
-          result[date] = `${result[date]} / ${cnt}`;
+          result[date] = `${result[date][0]} out of ${result[date][1]}`;
         }
         res.json(result)
+      }catch(err){
+        res.status(500).json({message: err.message})
+      }
+    })
+
+    app.get("/keychal/statesall", async (req, res) => {
+      try{
+        const {date} = req.query;
+        const data = await db.collection("Keychal_States").find({date}).toArray();
+
+        res.json(data);
       }catch(err){
         res.status(500).json({message: err.message})
       }
