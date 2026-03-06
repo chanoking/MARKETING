@@ -13,8 +13,11 @@
     font-size: 14px;
 }
 
+.react-calendar__tile--active {
+    background-color: #ADD8E6;
+}
 .tile-note{
-    font-size: 10px;
+    font-size: 12px;
     color: red;
     margin-top: 2px;
     text-align: center;

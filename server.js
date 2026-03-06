@@ -238,6 +238,34 @@ async function startServer() {
       }
     })
     
+    app.post("/keychal/keyword_state_update", async (req, res) => {
+      try {
+
+        const { editedStates } = req.body;
+
+        for (const doc of editedStates) {
+
+          const { _id, keyword, influencer_id, item, brand, quote } = doc;
+
+          await db.collection("Keychal_Keywords").updateOne(
+            { _id: new ObjectId(_id), influencer_id },
+            { $set: { keyword, quote, item, brand } }
+          );
+
+        }
+
+        res.json({
+          message: "update 완료!"
+        });
+
+      } catch (err) {
+
+        res.status(500).json({
+          message: err.message
+        });
+
+      }
+    });
 
     /* =========================
        SPA Fallback
