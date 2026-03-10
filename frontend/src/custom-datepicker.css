@@ -1,0 +1,60 @@
+.react-datepicker {
+  width: 600px;           /* 달력 전체 너비 */
+  font-size: 16px;        /* 기본 글자 크기 */
+  padding: 1rem;
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+}
+
+.react-datepicker__month-container{
+    width: 570px;
+    padding:15px;
+    height: 400px;
+}
+.react-datepicker__header {
+  padding: 1rem 0;
+  background-color: #f5f5f5;
+}
+
+.react-datepicker__day-names {
+
+}
+
+.react-datepicker__day-name{
+    height: 50px;
+    width: 50px;
+    font-weight: bold;
+}
+.react-datepicker__current-month {
+  font-size: 18px;  /* 달력 상단 월/연도 글자 */
+  font-weight: bold;
+}
+
+.react-datepicker__day {
+  width: 50px;       /* 날짜 셀 너비 */
+  height: 50px;      /* 날짜 셀 높이 */
+  line-height: 50px; /* 세로 중앙 정렬 */
+  text-align: center;
+  margin: 2px;       /* 날짜 간격 */
+  border-radius: 6px;
+}
+
+.react-datepicker__day--selected {
+  background-color: #ff6b6b;
+  color: white;
+  font-weight: bold;
+}
+
+.react-datepicker__navigation {
+  top: 10px;
+  width: 40px; height: 40px; 
+  border-radius: 50%;
+}
+
+.react-datepicker__navigation-icon {
+  font-size: 20px;
+}
+
+.react-datepicker__day-name {
+  font-size: 16px; /* 요일 이름 크기 */
+}
