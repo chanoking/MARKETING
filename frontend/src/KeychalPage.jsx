@@ -52,9 +52,9 @@ export default function KeychalPage() {
     data.forEach((doc) => {
       if (date === doc["date"]) {
         if (doc["rank"] > 0) {
-          result[0].push(doc["keyword"]);
+          result[0].push([doc["keyword"], doc["influencer"]]);
         } else {
-          result[1].push(doc["keyword"]);
+          result[1].push([doc["keyword"], doc["influencer"]]);
         }
       }
     });
@@ -240,14 +240,14 @@ export default function KeychalPage() {
               <div style={{ display: "flex", gap: 40 }}>
 
                 <div>
-                  {states[0]?.map((keyword) => (
-                    <p key={keyword}>{keyword}</p>
+                  {states[0]?.map((key_infl) => (
+                    <p key={key_infl[0]}>{key_infl[0]}_{key_infl[1]}</p>
                   ))}
                 </div>
 
                 <div>
-                  {states[1]?.map((keyword) => (
-                    <p key={keyword}>{keyword}</p>
+                  {states[1]?.map((key_infl) => (
+                    <p key={key_infl[0]}>{key_infl[0]}_{key_infl[1]}</p>
                   ))}
                 </div>
 

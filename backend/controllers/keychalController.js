@@ -39,6 +39,40 @@ const createControllers = (db) => {
             res.status(500).json({ message: err.message });
         }
     }
+
+    const getInflKeywordStates = async (req, res) => {
+        try{    
+            const { influencer } = req.query;
+
+            if(!influencer) {
+                return res.status(400).json({message: "influencer required!"})
+            }
+            
+            const states = await db.collection("Keychal_States").find({ influencer })
+                                    .toArray();
+            const map = {};
+
+            for(let state of states){
+                const d = state["date"];
+                const r = state["rank"];
+                if(!map[d]){
+                    if (r > 0){
+                        map[d] = 1;
+                    }else{
+                        map[d] = 0;
+                    }
+                }else{
+                    if (r > 0){
+                        map[d]++;
+                    }
+                }
+            }
+
+            res.json(map);
+        }catch(err){
+            res.status(500).json({message: err.message})
+        }
+    }
     
     const countVisibleKeywords = async (req, res) => {
         try{
@@ -110,7 +144,8 @@ const createControllers = (db) => {
         getKeywordStates,
         countVisibleKeywords,
         getAllStates,
-        updateKeywordStates
+        updateKeywordStates,
+        getInflKeywordStates
     }
 }
 
