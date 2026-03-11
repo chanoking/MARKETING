@@ -177,7 +177,7 @@ export default function KeychalPage() {
     top: "50%",
     left: "50%",
     transform: "translate(-50%, -50%)",
-    background: "white",
+    background: "ivory",
     padding: "20px",
     border: "1px solid #ccc",
     zIndex: 1000

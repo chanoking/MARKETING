@@ -8,6 +8,8 @@ export default function InflPage(){
     const [keywords, setKeywords] = useState([]);
     const [date, setDate] = useState(new Date());
     const [memo, setMemo] = useState({});
+    const [popup, setPopup] = useState(false);
+    const [keywordStates, setKeywordStates] = useState([]);
 
     const location = useLocation();
     const influencer = location.state?.influencer;
@@ -28,8 +30,28 @@ export default function InflPage(){
         const fetchStates = async () => {
             const res = await fetch(`http://localhost:3000/keychal/influencer?influencer=${infl}`);
             const data = await res.json();
+
+            setKeywordStates(data);
+
+            const map = {};
+
+            for(let state of data){
+                const d = state["date"];
+                const r = state["rank"];
+                if(!map[d]){
+                    if (r > 0){
+                        map[d] = 1;
+                    }else{
+                        map[d] = 0;
+                    }
+                }else{
+                    if (r > 0){
+                        map[d]++;
+                    }
+                }
+            }
     
-            setMemo(data);
+            setMemo(map);
         }
         fetchStates();
     }, [infl])
@@ -74,31 +96,33 @@ export default function InflPage(){
         }}>
             <div>
                 {keywords.map(k => {
-                     const bg = paint(k.item);
+                    const bg = paint(k.item);
 
                     return (
-                            <div
-                                key={k._id}
-                                style={{
-                                        border:"2px solid #ccc",
-                                        padding:10,
-                                        marginBottom:5,
-                                        marginRight:10,
-                                        background:bg,
-                                        color:paintText(bg),
-                                        fontWeight:600
-                                    }}
-                            >
-                                {k.keyword}
-                            </div>
-        )
-    })}
+                        <div
+                            key={k._id}
+                            style={{
+                                    border:"2px solid #ccc",
+                                    padding:10,
+                                    marginBottom:5,
+                                    marginRight:10,
+                                    background:bg,
+                                    color:paintText(bg),
+                                    fontWeight:600
+                                    }}>
+                            {k.keyword}
+                        </div>
+                        )
+                    })}
             </div>
             
             <DatePicker
                 className="my-date-picker"
                 selected={date}
-                onChange={(d) => setDate(d)}
+                onChange={(d) => {
+                    setDate(d);
+                    setPopup(true);
+                }}
                 renderDayContents={(day, date) => {
                     const copyDate = new Date(date);
                     copyDate.setDate(copyDate.getDate() + 1)
@@ -125,7 +149,70 @@ export default function InflPage(){
                         </div>
                     )
                 }}
-                inline />
+            inline />
+            
+            {popup && 
+            <div style={{
+                position: "fixed",
+                top: "50%",
+                left: "50%",
+                transform: "translate(-50%, -50%)",
+                background: "#DCDCDC",
+                padding: 20,
+                border: "1px solid #ccc",
+                zIndex: 1000,
+                borderRadius: 5
+            }}>
+            
+
+                <p style={{
+                    fontSize: 14,
+                    fontWeight: 600,
+                    }}>{date.toISOString().split("T")[0]}</p>
+                
+                <div
+                    style={{
+                        display: "flex",
+                        gap: 120,
+                    }}>
+                    <h4>Positive</h4>
+                    <h4>Negative</h4>
+                </div>
+                
+                <div style={{ display: "flex", gap: 80 }}>
+
+                <div>
+                    {keywordStates.filter(k => k.rank > 0 && 
+                        k.date === date.toISOString().split("T")[0]).map(k => (
+                        <p key={k._id} style={{ margin: 0, fontSize: 14 }}>{k.keyword}</p>
+                    ))}
+                </div>
+
+                <div>
+                    {keywordStates.filter(k => k.rank === 0 &&
+                        k.date === date.toISOString().split("T")[0]).map(k => (
+                        <p key={k._id} style={{ margin: 0, fontSize: 14 }}>{k.keyword}</p>
+                    ))}
+                </div>
+
+                </div>
+
+                <button
+                    style={{
+                        marginTop:10,
+                        padding: 5,
+                        height: 30,
+                        fontSize: 12,
+                        background: "#FF4C4C",
+                        color: "white"
+                    }}
+                    onClick={() => setPopup(false)}
+                    >
+                    닫기</button>
+
+                </div> 
+            }
+
         </div>
     )
 }
