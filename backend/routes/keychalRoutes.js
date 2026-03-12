@@ -14,7 +14,8 @@ export default (controllers) => {
   router.get("/keyword/states", controllers.getKeywordStates);
   router.get("/states/cal", controllers.countVisibleKeywords);
   router.get("/statesall", controllers.getAllStates);
-  router.get("/influencer", controllers.getInflKeywordStates)
+  router.get("/influencer", controllers.getInflKeywordStates);
+  router.get("/infl/keyword", controllers.getInflTheKeywordStates);
   router.post("/keyword_state_update", controllers.updateKeywordStates);
 
   return router;

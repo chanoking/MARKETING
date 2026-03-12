@@ -1,20 +1,22 @@
-import { useState } from "react";
-import "./LoginPage.css";
-import { useNavigate } from "react-router-dom"
-import InflPage from './InflPage.jsx'
+import { useState, useEffect } from "react";
+import "../css/LoginPage.css";
+import { useNavigate } from "react-router-dom";
+import InflPage from './InflPage.jsx';
 
 export default function LoginPage() {
-  const [idState, setIdState] = useState("");
-  const [pdState, setPdState] = useState("");
+  const [id, setId] = useState("");
+  const [password, setPassword] = useState("");
   const [passkeyPopup, setPasskeyPopup] = useState(false);
   const [passkey, setPasskey] = useState("");
   const [currentInfl, setCurrentInfl] = useState("");
+  const [user, setUser] = useState(null);
+
+
+  useEffect(() => {
+    document.title = "LifeNBio Log in"
+  }, [])
 
   const navigate = useNavigate();
-
-  const handleLogin = () => {
-    console.log(idState, pdState);
-  };
 
   const handlePasskey = async () => {
     try {
@@ -39,6 +41,45 @@ export default function LoginPage() {
       console.error("Fetch failed:", err);
     }
   };
+
+  const handleLogin = async () => {
+    const regex = /^(?=.*[a-zA-Z])(?=.*\d)[a-zA-Z\d]{8}$/;
+    const isValid = regex.test(password);
+
+    if(!isValid) {
+      alert("비밀번호는 정확히 문자, 숫자를 포함하여 8자여야 합니다!");
+      return;
+    }
+
+    // console.log(idState);
+
+    const res = await fetch(
+      "http://localhost:3000/auth/login",
+      { 
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          id,
+          password
+        })
+      }
+    )
+
+    if(res.ok){
+      const data = await res.json();
+      localStorage.setItem("token", data.token);
+      setUser(data.id);
+      navigate('/select');
+    }else{
+      alert(data.message);
+    }
+  }
+
+  const handleSignup = async () => {
+    navigate("/signup");
+  }
 
 
   return (
@@ -74,8 +115,8 @@ export default function LoginPage() {
         <input
           type="text"
           placeholder="ID"
-          value={idState}
-          onChange={(e) => setIdState(e.target.value)}
+          value={id}
+          onChange={(e) => setId(e.target.value)}
           style={{
             border: "1px solid #ccc",
             height: 50,
@@ -88,8 +129,8 @@ export default function LoginPage() {
         <input
           type="password"
           placeholder="Password"
-          value={pdState}
-          onChange={(e) => setPdState(e.target.value)}
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
           style={{
             border: "1px solid #ccc",
             height: 50,
@@ -141,16 +182,18 @@ export default function LoginPage() {
           marginTop: 60,
         }}
       >
-        <a
-          href="/signup"
+        <span
+          onClick={() => navigate("/signup")}
           style={{
             color: "#32CD32",
             fontWeight: 500,
+            cursor:"pointer"
           }}
         >
           Sign up
-        </a>
+        </span>
       </div>
+
     </div>
 
     {passkeyPopup && (

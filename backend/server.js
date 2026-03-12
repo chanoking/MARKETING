@@ -9,10 +9,10 @@ import cors from "cors";
 import { connectDB } from "./db.js";
 import blogRoutes from "./routes/blogRoutes.js";
 import keychalRoutes from "./routes/keychalRoutes.js";
-import loginRoutes from "./routes/loginRoutes.js";
+import loginRoutes from "./routes/authRoutes.js";
 import keychalControllers from "./controllers/keychalController.js";
 import blogControllers from "./controllers/blogController.js";
-import loginControllers from "./controllers/loginController.js";
+import authControllers from "./controllers/authController.js";
 
 dotenv.config();
 
@@ -48,12 +48,12 @@ async function startServer() {
     // 2️⃣ 컨트롤러에 DB 주입
     const keychalCtrl = keychalControllers(db);
     const blogCtrl = blogControllers(db);
-    const loginCtrl = loginControllers(db);
+    const authCtrl = authControllers(db);
     
     // 3️⃣ 라우터 등록 (컨트롤러 주입)
     app.use("/keychal", keychalRoutes(keychalCtrl));
     app.use("/blog", blogRoutes(blogCtrl));
-    app.use("/login", loginRoutes(loginCtrl));
+    app.use("/auth", loginRoutes(authCtrl));
     
     app.use(express.static(frontendPath));
     

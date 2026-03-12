@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import React from "react";
 import Calendar from "react-calendar";
 import "react-calendar/dist/Calendar.css";
-import "./KeychalPage.css";
+import "../css/KeychalPage.css";
 
 export default function KeychalPage() {
 

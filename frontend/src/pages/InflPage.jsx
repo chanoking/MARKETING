@@ -2,7 +2,7 @@ import { useLocation } from "react-router-dom";
 import { useState, useEffect } from 'react';
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-import "./custom-datepicker.css";
+import "../css/custom-datepicker.css";
 
 export default function InflPage(){
     const [keywords, setKeywords] = useState([]);
@@ -10,10 +10,19 @@ export default function InflPage(){
     const [memo, setMemo] = useState({});
     const [popup, setPopup] = useState(false);
     const [keywordStates, setKeywordStates] = useState([]);
+    const [keywordPopup, setKeywordPopup] = useState(false);
+    const [selectedKeyword, setSelectedKeyword] = useState(null);
+    const [len, setLen] = useState(0);
+    const [dailyVal, setDailyVal] = useState(0);
+    const [quote, setQuote] = useState(0);
+    const [currentVal, setCurrentVal] = useState(0);
 
     const location = useLocation();
     const influencer = location.state?.influencer;
     const infl = influencer?.influencer
+
+    const year = date.getFullYear();
+    const month = date.getMonth() + 1;
 
     useEffect(() => {
         if(!influencer) return;
@@ -56,6 +65,29 @@ export default function InflPage(){
         fetchStates();
     }, [infl])
 
+    const handleClickKeyword = (keyword, quote) => {
+        setSelectedKeyword(keyword);
+        setKeywordPopup(true);
+        calculate(keyword, quote);
+    }
+    
+    const calculate = async (keyword, quote) => {
+        const res = await fetch(
+            `http://localhost:3000/keychal/infl/keyword?influencer=${infl}&keyword=${keyword}`);
+        const data = await res.json();    
+        const len = data.filter(s => +(s.date.slice(0, 4)) === year 
+                    && +(s.date.slice(5, 7)) === month
+                    && s.rank > 0).length
+        const lastDay = new Date(year, month, 0).getDate();
+        const dailyV = Math.round(quote / lastDay);
+        const currentV = dailyV * len;
+            
+        setCurrentVal(currentV.toLocaleString());
+        setDailyVal(dailyV.toLocaleString());
+        setQuote(quote.toLocaleString());
+        setLen(len);
+    }
+
     const paint = (item) => {
         switch(item){
             case "그로우뉴":
@@ -88,6 +120,27 @@ export default function InflPage(){
         }
     };
 
+    const popupStyle = {
+                position: "fixed",
+                top: "50%",
+                left: "50%",
+                transform: "translate(-50%, -50%)",
+                background: "#EDEDED",
+                padding: 20,
+                border: "1px solid #ccc",
+                zIndex: 1000,
+                borderRadius: 5
+            }
+
+    const buttonStyle = {
+                    marginTop:10,
+                    padding: 5,
+                    height: 30,
+                    fontSize: 12,
+                    background: "#FF4C4C",
+                    color: "white"
+                }
+
     return (
         <div style={{
             userSelect: "none",
@@ -108,8 +161,11 @@ export default function InflPage(){
                                     marginRight:10,
                                     background:bg,
                                     color:paintText(bg),
-                                    fontWeight:600
-                                    }}>
+                                    fontWeight:600,
+                                    cursor: "pointer"
+                                    }}
+                            onClick={() => handleClickKeyword(k.keyword, k.quote)}
+                                    >
                             {k.keyword}
                         </div>
                         )
@@ -127,7 +183,6 @@ export default function InflPage(){
                     const copyDate = new Date(date);
                     copyDate.setDate(copyDate.getDate() + 1)
                     const d = copyDate.toISOString().slice(0,10);
-                    // console.log(d)
                     const val = memo[d]; // val은 문자열 또는 배열
 
                     return (
@@ -152,19 +207,8 @@ export default function InflPage(){
             inline />
             
             {popup && 
-            <div style={{
-                position: "fixed",
-                top: "50%",
-                left: "50%",
-                transform: "translate(-50%, -50%)",
-                background: "#DCDCDC",
-                padding: 20,
-                border: "1px solid #ccc",
-                zIndex: 1000,
-                borderRadius: 5
-            }}>
+            <div style={popupStyle}>
             
-
                 <p style={{
                     fontSize: 14,
                     fontWeight: 600,
@@ -198,19 +242,53 @@ export default function InflPage(){
                 </div>
 
                 <button
-                    style={{
-                        marginTop:10,
-                        padding: 5,
-                        height: 30,
-                        fontSize: 12,
-                        background: "#FF4C4C",
-                        color: "white"
-                    }}
+                style={buttonStyle}
                     onClick={() => setPopup(false)}
                     >
                     닫기</button>
 
                 </div> 
+            }
+
+            {
+                keywordPopup && (
+                    <div
+                        style={popupStyle}>
+                            
+                            <div style={{
+                                display: "flex",
+                                gap: 30,
+                                textAlign: "center"
+                            }}>
+
+                                <div className="duration">
+                                    <h3>유지일수</h3>
+                                    <p>{len}</p>
+                                </div>
+
+                                <div className="dailyVal">
+                                    <h3>일별금액</h3>
+                                    <p>{dailyVal}</p>
+                                </div>
+
+                                <div className="quote">
+                                    <h3>견적</h3>
+                                    <p>{quote}</p>
+                                </div>
+
+                                <div className="currentVal">
+                                    <h3>현재금액</h3>
+                                    <p>{currentVal}</p>
+                                </div>
+
+                            </div>
+                            
+                            <button 
+                            style={buttonStyle}
+                            onClick={() => setKeywordPopup(false)}>닫기</button>
+                    </div>
+                )
+
             }
 
         </div>
