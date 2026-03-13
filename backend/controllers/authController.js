@@ -4,6 +4,7 @@ import jwt from "jsonwebtoken";
 
 const createControllers = (db) => {
     const saltRounds = 10;
+    
     const loginWithPasskey = async (req, res) => {
         try{
             const {passkey} = req.body;
@@ -24,8 +25,6 @@ const createControllers = (db) => {
             if (!id || !password || !manageCode) {
                 return res.status(400).json({message: "Required all elements!"})
             }
-
-            // console.log(password);
 
             const regex = /^(?=.*[a-zA-Z])(?=.*\d)[a-zA-Z\d]{8}$/;
 
@@ -72,7 +71,11 @@ const createControllers = (db) => {
 
             )
 
-            res.status(200).json({message: "Log in 성공!", token})
+            res.status(200).json({
+                message: "Log in 성공!",
+                token,
+                id: user.id
+            })
 
         }catch(err){
             res.status(500).json({error: err.message});

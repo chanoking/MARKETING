@@ -3,6 +3,7 @@ import React from "react";
 import Calendar from "react-calendar";
 import "react-calendar/dist/Calendar.css";
 import "../css/KeychalPage.css";
+import {useNavigate, useLocation} from "react-router-dom";
 
 export default function KeychalPage() {
 
@@ -24,10 +25,25 @@ export default function KeychalPage() {
   const [states, setStates] = useState([[], []]);
   const [isEditing, setIsEditing] = useState(false);
   const [editedStates, setEditedStates] = useState([]);
+  const [user, setUser] = useState(useLocation().state?.user)
+
+  const token = localStorage.getItem("token");
+
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if(!token){
+      navigate("/login");
+    }
+  }, []);
 
   useEffect(() => {
     async function fetchInfls() {
-      const res = await fetch("http://localhost:3000/keychal/influencers");
+      const res = await fetch("http://localhost:3000/keychal/influencers", {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
       const data = await res.json();
       setInfluencers(data);
     }
@@ -36,15 +52,29 @@ export default function KeychalPage() {
 
   useEffect(() => {
     const fetchSums = async () => {
-      const res = await fetch("http://localhost:3000/keychal/states/cal");
+      const res = await fetch("http://localhost:3000/keychal/states/cal", {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
       const data = await res.json();
       setVisibleSum(data);
     };
     fetchSums();
   }, []);
 
+  const logout = () => {
+    localStorage.removeItem("token");
+    setUser(null)
+    navigate("/login")
+  }
+
   const fetchSeparateKeywords = async (date) => {
-    const res = await fetch(`http://localhost:3000/keychal/statesall?date=${date}`);
+    const res = await fetch(`http://localhost:3000/keychal/statesall?date=${date}`, {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
     const data = await res.json();
 
     const result = [[], []];
@@ -95,7 +125,11 @@ export default function KeychalPage() {
 
   const fetchInflKeywords = async (infl) => {
     const res = await fetch(
-      `http://localhost:3000/keychal/keywords?influencer_id=${infl._id}`
+      `http://localhost:3000/keychal/keywords?influencer_id=${infl._id}`, {
+        headers:{
+          Authorization: `Bearer ${token}`
+        }
+      }
     );
     const data = await res.json();
     setSelectedInflKeywords(data);
@@ -103,7 +137,11 @@ export default function KeychalPage() {
 
   const fetchStateForKeyword = async (keyword) => {
     const res = await fetch(
-      `http://localhost:3000/keychal/keyword/states?keyword=${keyword}`
+      `http://localhost:3000/keychal/keyword/states?keyword=${keyword}`, {
+        headers:{
+          Authorization: `Bearer ${token}`
+        }
+      }
     );
     const data = await res.json();
 
@@ -128,7 +166,9 @@ export default function KeychalPage() {
       {
         method: "POST",
         headers: {
-          "Content-Type": "application/json"
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
+
         },
         body: JSON.stringify({
           editedStates
@@ -184,6 +224,42 @@ export default function KeychalPage() {
   };
 
   return (
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        gap: 200,
+        userSelect: "none"
+      }}>
+      
+      <div
+        style={{
+          display: "flex",
+          gap: 20
+        }}>
+
+        <button
+          style={{
+            padding: 10,
+            width: 100,
+            height: 40,
+            background: "#e74c3c",
+            color: "white",
+            fontWeight: 1000,
+            marginLeft: 40 
+          }}
+          onClick={logout}
+          >로그아웃</button>
+
+        <div
+          style={{
+            padding: 8,
+            fontWeight: 1000,
+            fontSize: 16
+          }}>사용자: {user}</div>
+
+        </div>
+
     <div style={{ padding: 40, userSelect: "none" }}>
 
       <div style={{ display: "flex" }}>
@@ -393,6 +469,7 @@ export default function KeychalPage() {
         </div>
       )}
 
+    </div>
     </div>
   );
 }

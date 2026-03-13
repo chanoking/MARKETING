@@ -16,6 +16,7 @@ export default function InflPage(){
     const [dailyVal, setDailyVal] = useState(0);
     const [quote, setQuote] = useState(0);
     const [currentVal, setCurrentVal] = useState(0);
+    const [keywordVisibleDays, setKeywordVisibleDays] = useState([]);
 
     const location = useLocation();
     const influencer = location.state?.influencer;
@@ -70,14 +71,21 @@ export default function InflPage(){
         setKeywordPopup(true);
         calculate(keyword, quote);
     }
-    
+
     const calculate = async (keyword, quote) => {
         const res = await fetch(
             `http://localhost:3000/keychal/infl/keyword?influencer=${infl}&keyword=${keyword}`);
         const data = await res.json();    
-        const len = data.filter(s => +(s.date.slice(0, 4)) === year 
+        const filteredData = data.filter(s => +(s.date.slice(0, 4)) === year 
                     && +(s.date.slice(5, 7)) === month
-                    && s.rank > 0).length
+                    && s.rank > 0)
+        const len = filteredData.length;    
+        const visibleDays = filteredData.map(d => +(d?.date?.slice(8, 10)));
+        
+        visibleDays.sort((a,b) => a - b)
+
+        console.log(visibleDays)
+
         const lastDay = new Date(year, month, 0).getDate();
         const dailyV = Math.round(quote / lastDay);
         const currentV = dailyV * len;
@@ -86,6 +94,7 @@ export default function InflPage(){
         setDailyVal(dailyV.toLocaleString());
         setQuote(quote.toLocaleString());
         setLen(len);
+        setKeywordVisibleDays(visibleDays);
     }
 
     const paint = (item) => {
@@ -164,7 +173,7 @@ export default function InflPage(){
                                     fontWeight:600,
                                     cursor: "pointer"
                                     }}
-                            onClick={() => handleClickKeyword(k.keyword, k.quote)}
+                            onClick={() => {handleClickKeyword(k.keyword, k.quote)}}
                                     >
                             {k.keyword}
                         </div>
@@ -281,6 +290,13 @@ export default function InflPage(){
                                     <p>{currentVal}</p>
                                 </div>
 
+                            </div>
+
+                            <div>
+                                <h3>노출 날짜</h3>
+                                <div>
+                                    {keywordVisibleDays.join(", ")}
+                                </div>
                             </div>
                             
                             <button 

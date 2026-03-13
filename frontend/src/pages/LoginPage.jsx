@@ -9,8 +9,6 @@ export default function LoginPage() {
   const [passkeyPopup, setPasskeyPopup] = useState(false);
   const [passkey, setPasskey] = useState("");
   const [currentInfl, setCurrentInfl] = useState("");
-  const [user, setUser] = useState(null);
-
 
   useEffect(() => {
     document.title = "LifeNBio Log in"
@@ -20,7 +18,7 @@ export default function LoginPage() {
 
   const handlePasskey = async () => {
     try {
-      const res = await fetch("http://localhost:3000/login/passkey", {
+      const res = await fetch("http://localhost:3000/auth/passkey", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ passkey })
@@ -51,8 +49,6 @@ export default function LoginPage() {
       return;
     }
 
-    // console.log(idState);
-
     const res = await fetch(
       "http://localhost:3000/auth/login",
       { 
@@ -70,8 +66,7 @@ export default function LoginPage() {
     if(res.ok){
       const data = await res.json();
       localStorage.setItem("token", data.token);
-      setUser(data.id);
-      navigate('/select');
+      navigate('/select', {state: {user: data.id }});
     }else{
       alert(data.message);
     }
@@ -223,7 +218,7 @@ export default function LoginPage() {
                         background:"rgba(50, 205, 50, 0.5)",
                         color: "white"
                     }}
-                    onClick={() => handlePasskey()}
+                    onClick={handlePasskey}
                     >Enter</button>
                 <button
                     style={{

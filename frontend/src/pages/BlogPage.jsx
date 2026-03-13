@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react';
+import {useNavigate} from "react-router-dom";
 
 export default function BlogPage() {
   const [items, setItems] = useState([]);
@@ -11,12 +12,26 @@ export default function BlogPage() {
   const [isEditing, setIsEditing] = useState(false);
   const [editedStates, setEditedStates] = useState([]);
   
+
+  const token = localStorage.getItem("token");
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if(!token){
+      return navigate("/login");
+    }
+  }, []);
+
   /* =======================
      아이템 목록 로드
   ======================= */
   useEffect(() => {
     async function fetchItems() {
-      const res = await fetch("http://localhost:3000/blog/items");
+      const res = await fetch("http://localhost:3000/blog/items",{
+        headers:{
+          Authorization: `Bearer ${token}`
+        }
+      });
       const data = await res.json();
 
       setItems(data);
@@ -33,7 +48,11 @@ export default function BlogPage() {
       if (!selectedItem) return;
 
       const res = await fetch(
-        `http://localhost:3000/blog/keywords?item_id=${selectedItem._id}`
+        `http://localhost:3000/blog/keywords?item_id=${selectedItem._id}`, {
+          headers:{
+            Authorization: `Bearer ${token}`
+          }
+        }
       );
       const data = await res.json();
 
@@ -48,7 +67,11 @@ export default function BlogPage() {
   ======================= */
   const fetchKeywordStates = async (kw) => {
     const res = await fetch(
-      `http://localhost:3000/blog/keyword-state?keyword_id=${kw._id}`
+      `http://localhost:3000/blog/keyword-state?keyword_id=${kw._id}`,{
+        headers:{
+          Authorization: `Bearer ${token}`
+        }
+      }
     );
     const data = await res.json();
     const states = data[0]?.state || [];
@@ -107,6 +130,9 @@ export default function BlogPage() {
       {
         method: "POST",
         body: formData,
+        headers:{
+          Authorization: `Bearer ${token}`
+        }
       }
     );
     const data = await res.json();
@@ -124,7 +150,8 @@ export default function BlogPage() {
       {
         method: "POST",
         headers: {
-          "Content-Type": "application/json"
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
         },
         body: JSON.stringify({
           keyword_id: selectedKeyword._id,

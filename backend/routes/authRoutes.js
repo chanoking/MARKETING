@@ -1,6 +1,6 @@
 import express from 'express';
 
-export default (controllers) => {
+export default (controllers, requireToken) => {
     const router = express.Router();
 
     router.post("/passkey", controllers.loginWithPasskey)
