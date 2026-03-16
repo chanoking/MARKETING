@@ -38,7 +38,7 @@ export default function KeychalPage() {
 
   useEffect(() => {
     async function fetchInfls() {
-      const res = await fetch("http://localhost:3000/keychal/influencers", {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/keychal/influencers`, {
         headers: {
           Authorization: `Bearer ${token}`
         }
@@ -51,7 +51,7 @@ export default function KeychalPage() {
 
   useEffect(() => {
     const fetchSums = async () => {
-      const res = await fetch("http://localhost:3000/keychal/states/cal", {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/keychal/states/cal`, {
         headers: {
           Authorization: `Bearer ${token}`
         }
@@ -69,7 +69,7 @@ export default function KeychalPage() {
   }
 
   const fetchSeparateKeywords = async (date) => {
-    const res = await fetch(`http://localhost:3000/keychal/statesall?date=${date}`, {
+    const res = await fetch(`${import.meta.env.VITE_API_URL}/keychal/statesall?date=${date}`, {
       headers: {
         Authorization: `Bearer ${token}`
       }
@@ -124,7 +124,7 @@ export default function KeychalPage() {
 
   const fetchInflKeywords = async (infl) => {
     const res = await fetch(
-      `http://localhost:3000/keychal/keywords?influencer_id=${infl._id}`, {
+      `${import.meta.env.VITE_API_URL}/keychal/keywords?influencer_id=${infl._id}`, {
         headers:{
           Authorization: `Bearer ${token}`
         }
@@ -136,7 +136,7 @@ export default function KeychalPage() {
 
   const fetchStateForKeyword = async (keyword) => {
     const res = await fetch(
-      `http://localhost:3000/keychal/keyword/states?keyword=${keyword}`, {
+      `${import.meta.env.VITE_API_URL}/keychal/keyword/states?keyword=${keyword}`, {
         headers:{
           Authorization: `Bearer ${token}`
         }
@@ -161,7 +161,7 @@ export default function KeychalPage() {
 
   const handleSave = async () => {
     const res = await fetch(
-      "http://localhost:3000/keychal/keyword_state_update",
+      `${import.meta.env.VITE_API_URL}/keychal/keyword_state_update`,
       {
         method: "POST",
         headers: {

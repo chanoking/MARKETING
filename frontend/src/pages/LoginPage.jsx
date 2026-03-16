@@ -18,7 +18,7 @@ export default function LoginPage() {
 
   const handlePasskey = async () => {
     try {
-      const res = await fetch("http://localhost:3000/auth/passkey", {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/auth/passkey`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ passkey })
@@ -50,8 +50,7 @@ export default function LoginPage() {
     }
 
     const res = await fetch(
-      "http://localhost:3000/auth/login",
-      { 
+      `${import.meta.env.VITE_API_URL}/auth/login`      { 
         method: "POST",
         headers: {
           "Content-Type": "application/json"

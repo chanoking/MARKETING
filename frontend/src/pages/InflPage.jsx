@@ -29,7 +29,7 @@ export default function InflPage(){
         if(!influencer) return;
 
         const fetchKeywords = async () => {
-            const res = await fetch(`http://localhost:3000/keychal/keywords?influencer_id=${influencer._id}`);
+            const res = await fetch(`${import.meta.env.VITE_API_URL}/keychal/keywords?influencer_id=${influencer._id}`);
             const data = await res.json();
             setKeywords(data);
         }
@@ -38,7 +38,7 @@ export default function InflPage(){
 
     useEffect(() => {
         const fetchStates = async () => {
-            const res = await fetch(`http://localhost:3000/keychal/influencer?influencer=${infl}`);
+            const res = await fetch(`${import.meta.env.VITE_API_URL}/keychal/influencer?influencer=${infl}`);
             const data = await res.json();
 
             setKeywordStates(data);
@@ -74,7 +74,7 @@ export default function InflPage(){
 
     const calculate = async (keyword, quote) => {
         const res = await fetch(
-            `http://localhost:3000/keychal/infl/keyword?influencer=${infl}&keyword=${keyword}`);
+            `${import.meta.env.VITE_API_URL}/keychal/infl/keyword?influencer=${infl}&keyword=${keyword}`);
         const data = await res.json();    
         const filteredData = data.filter(s => +(s.date.slice(0, 4)) === year 
                     && +(s.date.slice(5, 7)) === month

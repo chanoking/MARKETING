@@ -14,7 +14,7 @@ export default function SignupPage(){
     }, [])
 
     const handleSend = async () => {
-        const res = await fetch("http://localhost:3000/auth/signup",
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/auth/signup`,
             {
                 method: "POST",
                 headers: {
@@ -27,9 +27,6 @@ export default function SignupPage(){
                 })
             }
         )
-
-        // const data = await res.json();
-        // console.log(data.message);
 
         if(res.ok){
             const data = await res.json();

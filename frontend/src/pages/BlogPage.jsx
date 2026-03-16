@@ -27,7 +27,7 @@ export default function BlogPage() {
   ======================= */
   useEffect(() => {
     async function fetchItems() {
-      const res = await fetch("http://localhost:3000/blog/items",{
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/blog/items`,{
         headers:{
           Authorization: `Bearer ${token}`
         }
@@ -48,7 +48,7 @@ export default function BlogPage() {
       if (!selectedItem) return;
 
       const res = await fetch(
-        `http://localhost:3000/blog/keywords?item_id=${selectedItem._id}`, {
+        `${import.meta.env.VITE_API_URL}/blog/keywords?item_id=${selectedItem._id}`, {
           headers:{
             Authorization: `Bearer ${token}`
           }
@@ -67,7 +67,7 @@ export default function BlogPage() {
   ======================= */
   const fetchKeywordStates = async (kw) => {
     const res = await fetch(
-      `http://localhost:3000/blog/keyword-state?keyword_id=${kw._id}`,{
+      `${import.meta.env.VITE_API_URL}/blog/keyword-state?keyword_id=${kw._id}`,{
         headers:{
           Authorization: `Bearer ${token}`
         }
@@ -126,7 +126,7 @@ export default function BlogPage() {
     formData.append("file", file);
 
     const res = await fetch(
-      "http://localhost:3000/blog/upload-excel",
+      `${import.meta.env.VITE_API_URL}/blog/upload-excel`,
       {
         method: "POST",
         body: formData,
@@ -146,7 +146,7 @@ export default function BlogPage() {
   ======================= */
   const handleSave = async () => {
     const res = await fetch(
-      "http://localhost:3000/blog/keyword-state-update",
+      `${import.meta.env.VITE_API_URL}/blog/keyword-state-update`,
       {
         method: "POST",
         headers: {
