@@ -28,7 +28,7 @@ const __dirname = path.dirname(__filename);
 // Middleware
 // =======================
 app.use(cors({
-  origin: "https://chanoking.com",
+  origin: ["https://chanoking.com", "https://www.chanoking.com"],
   credentials: true
 }));
 app.use(express.json());
