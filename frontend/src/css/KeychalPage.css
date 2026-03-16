@@ -48,3 +48,40 @@
     margin-bottom: 5px;
     padding: 10px;
 }
+
+.wheel-picker {
+    width: 120px;
+    text-align: center;
+    user-select: none;
+    font-family: "Noto Sans KR", sans-serif;
+}
+
+.picker-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    height: 120px;
+    overflow: hidden;
+}
+
+.picker-list li {
+    height: 40px;
+    line-height: 40px;
+    transition: all 0.2s;
+    opacity: 0.4;
+    font-size: 16px;
+}
+
+.picker-list li.selected {
+    font-size: 20px;
+    font-weight: bold;
+    opacity: 1;
+}
+
+.arrow {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 18px;
+    margin: 4px 0;
+}

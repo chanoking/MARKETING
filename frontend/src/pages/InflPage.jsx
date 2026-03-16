@@ -97,6 +97,26 @@ export default function InflPage(){
         setKeywordVisibleDays(visibleDays);
     }
 
+    const formatDate = (date, offset) => {
+        let year = date.getFullYear();
+        let month = date.getMonth() + 1; // 1~12
+
+        // offset 적용
+        month += offset;
+
+        // 연도와 월 조정
+        while (month > 12) {
+            month -= 12;
+            year += 1;
+        }
+        while (month < 1) {
+            month += 12;
+            year -= 1;
+        }
+
+        return `${year}년 ${month}월`;
+    };
+
     const paint = (item) => {
         switch(item){
             case "그로우뉴":
@@ -214,6 +234,16 @@ export default function InflPage(){
                     )
                 }}
             inline />
+
+            <div class="wheel-picker">
+                <button class="arrow up">▲</button>
+                    <ul class="picker-list">
+                        <li class="faded">{formatDate(new Date(), -1)}</li>
+                        <li class="selected">{formatDate(new Date(), 0)}</li>
+                        <li class="faded">{formatDate(new Date(), 1)}</li>
+                    </ul>
+                <button class="arrow down">▼</button>
+            </div>
             
             {popup && 
             <div style={popupStyle}>

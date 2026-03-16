@@ -28,7 +28,6 @@ export default function KeychalPage() {
   const [user, setUser] = useState(useLocation().state?.user)
 
   const token = localStorage.getItem("token");
-
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -220,7 +219,10 @@ export default function KeychalPage() {
     background: "ivory",
     padding: "20px",
     border: "1px solid #ccc",
-    zIndex: 1000
+    zIndex: 1000,
+    width: 600,
+    borderRadius: 5,
+    fontStyle: "italic"
   };
 
   return (
@@ -308,7 +310,7 @@ export default function KeychalPage() {
 
               <h1 style={{ fontSize: 15 }}>{selectedDate}</h1>
 
-              <div style={{ display: "flex", gap: 60 }}>
+              <div style={{ display: "flex", gap: 130 }}>
                 <h2>Positive</h2>
                 <h2>Negative</h2>
               </div>
