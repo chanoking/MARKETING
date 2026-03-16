@@ -11,7 +11,10 @@ const createControllers = (db) => {
     
             if (!passkey) res.status(400).json({message: "key 필요!"});
     
-            const data = await db.collection("Keychal_Influencers").find({_id: new ObjectId(passkey)}).toArray();
+            const data = await db.collection("Keychal_Influencers").findOne({passkey});
+
+            if(!data) return res.status(401).json({message: "정보가 일치하지 않습니다."});
+
             res.json(data);
         }catch(err){
             res.status(500).json({error: err.message});

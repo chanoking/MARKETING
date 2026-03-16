@@ -23,16 +23,16 @@ export default function LoginPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ passkey })
       });
+      
+      const data = await res.json();
 
       // res.ok 체크
       if (!res.ok) {
-        const text = await res.text(); // JSON이 아닐 수도 있으니 text로 받아보기
-        console.error("Server error:", text);
+        alert(data.message);
         throw new Error("Server returned an error");
       }
 
-      const data = await res.json(); // JSON 파싱
-      navigate("/influencer", {state: {influencer: data[0]}});
+      navigate("/influencer", {state: {influencer: data}});
       setPasskeyPopup(false);
 
     } catch (err) {
