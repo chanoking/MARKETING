@@ -21,8 +21,7 @@ export default function LoginPage() {
       const res = await fetch("http://localhost:3000/auth/passkey", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ passkey }),
-        credentials: "include"
+        body: JSON.stringify({ passkey })
       });
       
       const data = await res.json();
@@ -60,8 +59,7 @@ export default function LoginPage() {
         body: JSON.stringify({
           id,
           password
-        }),
-        credentials: "include"
+        })
       }
     )
 

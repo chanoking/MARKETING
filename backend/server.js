@@ -29,7 +29,6 @@ const __dirname = path.dirname(__filename);
 // =======================
 app.use(cors({
   origin: ["https://chanoking.com", "https://www.chanoking.com"],
-  credentials: true
 }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
