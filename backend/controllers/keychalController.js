@@ -136,6 +136,31 @@ const createControllers = (db) => {
             });
         }
     }
+
+    const getTotalValueForInflByMonth = async (req, res) => {
+        try{
+            const {influencer, year, month} = req.query;
+            const data = await db.collection("Keychal_States").find({influencer}).toArray();
+            const filteredData = data.filter(d => +d.date.slice(0, 4) === +year &&
+                                    +d.date.slice(5, 7) === +month);
+            
+            let sum = 0;
+
+            for(let d of filteredData){
+                const days = new Date(year, month, 0).getDate();
+                const keyword = await db.collection("Keychal_Keywords").findOne({keyword: d.keyword})
+                const quote = keyword.quote;
+                const dailyV = quote / days;
+                if (d.rank > 0) sum += dailyV
+            }
+            
+            res.json({sum: Math.round(sum).toLocaleString()});
+
+        }catch(err){
+            res.status(500).json({error: err.message});
+        }
+    }
+
     return {
         getInfluencers,
         getKeywords,
@@ -144,7 +169,8 @@ const createControllers = (db) => {
         getAllStates,
         updateKeywordStates,
         getInflKeywordStates,
-        getInflTheKeywordStates
+        getInflTheKeywordStates,
+        getTotalValueForInflByMonth
     }
 }
 

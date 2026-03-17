@@ -30,7 +30,8 @@ const __dirname = path.dirname(__filename);
 app.use(cors({
     origin: [
     "https://chanoking.com",
-    "https://www.chanoking.com"
+    "https://www.chanoking.com",
+    "http://localhost:5173"
   ]
 }));
 app.use(express.json());

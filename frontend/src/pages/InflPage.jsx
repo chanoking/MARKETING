@@ -17,6 +17,7 @@ export default function InflPage(){
     const [quote, setQuote] = useState(0);
     const [currentVal, setCurrentVal] = useState(0);
     const [keywordVisibleDays, setKeywordVisibleDays] = useState([]);
+    const [totalValueByMonth, setTotalValueByMonth] = useState(0);
     
     const location = useLocation();
     const influencer = location.state?.influencer;
@@ -28,6 +29,10 @@ export default function InflPage(){
     const [currentYearMonth, setCurrentYearMonth] = useState(`${year}년 ${month}월`);
     const [beforeYearMonth, setBeforeYearMonth] = useState("");
     const [afterYearMonth, setAfterYearMonth] = useState("");
+
+    const curYear = currentYearMonth.slice(0, 4);
+    const findIndexOfMonth = curYear.indexOf("월")
+    const curMonth = currentYearMonth.slice(5, findIndexOfMonth);
     
     useEffect(() => {
         if(!influencer) return;
@@ -69,6 +74,18 @@ export default function InflPage(){
         }
         fetchStates();
     }, [infl])
+
+    useEffect(() => {
+        const fetchTotalValue = async () => {
+            const params = new URLSearchParams({ influencer: infl, year: curYear, month: curMonth.trim() });
+            const res = await fetch(`${import.meta.env.VITE_API_URL}/keychal/inflTotalValue?${params}`);
+            const data = await res.json();   
+            
+            setTotalValueByMonth(data.sum);
+        }
+
+        fetchTotalValue();
+    }, [infl, curYear, curMonth])
     
     const formatDate = (yearMonth, offset, option) => {
         let year = +yearMonth.slice(0, 4);
@@ -129,11 +146,6 @@ export default function InflPage(){
         setQuote(quote.toLocaleString());
         setLen(len);
         setKeywordVisibleDays(visibleDays);
-    }
-
-
-    const showYearMonth = (date) => {
-
     }
 
     const paint = (item) => {
@@ -265,6 +277,14 @@ export default function InflPage(){
                     </ul>
                 <button className="arrow down"
                     onClick={() => formatDate(currentYearMonth, 1)}>▼</button>
+            </div>
+
+            <div
+                style={{padding: "120px 10px"}}>
+                <h2>{currentYearMonth} 금액</h2>
+                <p style={{
+                    fontWeight: "bold"
+                }}>{totalValueByMonth}</p>
             </div>
             
             {popup && 

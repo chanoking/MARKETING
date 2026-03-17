@@ -16,6 +16,7 @@ export default (controllers, requireToken) => {
   router.get("/statesall", requireToken, controllers.getAllStates);
   router.get("/influencer", controllers.getInflKeywordStates);
   router.get("/infl/keyword", controllers.getInflTheKeywordStates);
+  router.get("/inflTotalValue", controllers.getTotalValueForInflByMonth)
   router.post("/keyword_state_update", requireToken, controllers.updateKeywordStates);
 
   return router;
