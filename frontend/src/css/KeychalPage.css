@@ -50,10 +50,12 @@
 }
 
 .wheel-picker {
-    width: 120px;
+    width: 200px;
     text-align: center;
     user-select: none;
     font-family: "Noto Sans KR", sans-serif;
+    margin-left: 50px;
+    padding: 100px 20px;
 }
 
 .picker-list {
@@ -69,11 +71,11 @@
     line-height: 40px;
     transition: all 0.2s;
     opacity: 0.4;
-    font-size: 16px;
+    font-size: 20px;
 }
 
 .picker-list li.selected {
-    font-size: 20px;
+    font-size: 24px;
     font-weight: bold;
     opacity: 1;
 }
@@ -82,6 +84,6 @@
     background: none;
     border: none;
     cursor: pointer;
-    font-size: 18px;
+    font-size: 20px;
     margin: 4px 0;
 }

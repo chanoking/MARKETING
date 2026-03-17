@@ -17,14 +17,18 @@ export default function InflPage(){
     const [quote, setQuote] = useState(0);
     const [currentVal, setCurrentVal] = useState(0);
     const [keywordVisibleDays, setKeywordVisibleDays] = useState([]);
-
+    
     const location = useLocation();
     const influencer = location.state?.influencer;
     const infl = influencer?.influencer
-
+    
     const year = date.getFullYear();
     const month = date.getMonth() + 1;
-
+    
+    const [currentYearMonth, setCurrentYearMonth] = useState(`${year}년 ${month}월`);
+    const [beforeYearMonth, setBeforeYearMonth] = useState("");
+    const [afterYearMonth, setAfterYearMonth] = useState("");
+    
     useEffect(() => {
         if(!influencer) return;
 
@@ -35,16 +39,16 @@ export default function InflPage(){
         }
         fetchKeywords();
     }, [influencer])
-
+    
     useEffect(() => {
         const fetchStates = async () => {
             const res = await fetch(`${import.meta.env.VITE_API_URL}/keychal/influencer?influencer=${infl}`);
             const data = await res.json();
-
+            
             setKeywordStates(data);
-
+            
             const map = {};
-
+            
             for(let state of data){
                 const d = state["date"];
                 const r = state["rank"];
@@ -60,11 +64,43 @@ export default function InflPage(){
                     }
                 }
             }
-    
+            
             setMemo(map);
         }
         fetchStates();
     }, [infl])
+    
+    const formatDate = (yearMonth, offset, option) => {
+        let year = +yearMonth.slice(0, 4);
+        const indexOfMonth = yearMonth.indexOf("월");
+        let month = +yearMonth.slice(5, indexOfMonth);
+
+        month += offset;
+
+        while (month > 12) {
+            month -= 12;
+            year += 1;
+        }
+        while (month < 1) {
+            month += 12;
+            year -= 1;
+        }
+
+        const result = `${year}년 ${month}월`;
+
+        if(!option){
+            setCurrentYearMonth(result);
+            formatDate(result, 1, 1);
+            formatDate(result, -1, -1);
+        }else{
+            if(option === 1){
+                setAfterYearMonth(result);
+            }else{
+                setBeforeYearMonth(result);
+            }
+        }
+
+    };
 
     const handleClickKeyword = (keyword, quote) => {
         setSelectedKeyword(keyword);
@@ -84,8 +120,6 @@ export default function InflPage(){
         
         visibleDays.sort((a,b) => a - b)
 
-        console.log(visibleDays)
-
         const lastDay = new Date(year, month, 0).getDate();
         const dailyV = Math.round(quote / lastDay);
         const currentV = dailyV * len;
@@ -97,25 +131,10 @@ export default function InflPage(){
         setKeywordVisibleDays(visibleDays);
     }
 
-    const formatDate = (date, offset) => {
-        let year = date.getFullYear();
-        let month = date.getMonth() + 1; // 1~12
 
-        // offset 적용
-        month += offset;
+    const showYearMonth = (date) => {
 
-        // 연도와 월 조정
-        while (month > 12) {
-            month -= 12;
-            year += 1;
-        }
-        while (month < 1) {
-            month += 12;
-            year -= 1;
-        }
-
-        return `${year}년 ${month}월`;
-    };
+    }
 
     const paint = (item) => {
         switch(item){
@@ -235,14 +254,17 @@ export default function InflPage(){
                 }}
             inline />
 
-            <div class="wheel-picker">
-                <button class="arrow up">▲</button>
-                    <ul class="picker-list">
-                        <li class="faded">{formatDate(new Date(), -1)}</li>
-                        <li class="selected">{formatDate(new Date(), 0)}</li>
-                        <li class="faded">{formatDate(new Date(), 1)}</li>
+            <div className="wheel-picker">
+                <button className="arrow up"
+                    onClick={() => formatDate(currentYearMonth, -1)}
+                >▲</button>
+                    <ul className="picker-list">
+                        <li className="faded">{beforeYearMonth}</li>
+                        <li className="selected">{currentYearMonth}</li>
+                        <li className="faded">{afterYearMonth}</li>
                     </ul>
-                <button class="arrow down">▼</button>
+                <button className="arrow down"
+                    onClick={() => formatDate(currentYearMonth, 1)}>▼</button>
             </div>
             
             {popup && 
