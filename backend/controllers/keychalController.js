@@ -161,6 +161,26 @@ const createControllers = (db) => {
         }
     }
 
+    const getSummary = async (req, res) => {
+        try{
+            const data = await db.collection("Keychal_States").find({}).toArray();
+            res.json(data);
+        }catch(err){
+            res.status(500).json({error: err.message});
+        }
+    }
+
+    const getInfoForKeyword = async (req, res) => {
+        try{
+            const {keyword} = req.query;
+            const data = await db.collection("Keychal_Keywords").findOne({keyword});
+            
+            res.json(data);
+        }catch(err){
+            res.status(500).json({error: err.message})
+        }
+    }
+
     return {
         getInfluencers,
         getKeywords,
@@ -170,7 +190,9 @@ const createControllers = (db) => {
         updateKeywordStates,
         getInflKeywordStates,
         getInflTheKeywordStates,
-        getTotalValueForInflByMonth
+        getTotalValueForInflByMonth,
+        getSummary,
+        getInfoForKeyword
     }
 }
 

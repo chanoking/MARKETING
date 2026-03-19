@@ -1,0 +1,29 @@
+.headers {
+    display: flex;
+    gap: 200px;
+    margin-left: 22px;
+    height: 52px;
+}
+
+.header {
+    padding: 5px
+}
+
+.keywords {
+    gap: 0px;
+}
+
+.el {
+    border: 1px solid #ccc;
+    padding: 15px;
+    width: 170px;
+    text-align: center;
+    border-right: 0px;
+}
+
+.els {
+    border: 1px solid #ccc;
+    padding: 15px;
+    width: 170px;
+    text-align: center;
+}

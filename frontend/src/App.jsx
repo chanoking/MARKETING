@@ -4,7 +4,8 @@ import KeychalPage from "./pages/KeychalPage.jsx"
 import LoginPage from "./pages/LoginPage.jsx";
 import InflPage from "./pages/InflPage.jsx";
 import SignupPage from "./pages/SignupPage.jsx";
-import { BrowserRouter, Routes, Route } from "react-router-dom"
+import KeychalSummaryPage from "./pages/KeychalSummaryPage.jsx";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 function App() {
   return (
@@ -16,6 +17,7 @@ function App() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<SignupPage />} />
         <Route path="/influencer" element={<InflPage />} />
+        <Route path="/keychalSummary" element={<KeychalSummaryPage />} />
       </Routes>
     </BrowserRouter>
   );

@@ -25,7 +25,8 @@ export default function KeychalPage() {
   const [states, setStates] = useState([[], []]);
   const [isEditing, setIsEditing] = useState(false);
   const [editedStates, setEditedStates] = useState([]);
-  const [user, setUser] = useState(useLocation().state?.user)
+  const [user, setUser] = useState(useLocation().state?.user);
+  const [clickedSummary, setClickedSummary] = useState(false);
 
   const token = localStorage.getItem("token");
   const navigate = useNavigate();
@@ -182,6 +183,12 @@ export default function KeychalPage() {
     setIsEditing(false);
   };
 
+  const handleSummary = () => {
+    navigate("/keychalSummary", {
+      state: {user}
+    })
+  }
+
   const buttonStyle = {
     height: "22px",
     fontSize: "12px",
@@ -208,7 +215,8 @@ export default function KeychalPage() {
     overflow: "auto",
     display: "grid",
     gridTemplateColumns: "repeat(4, 1fr)",
-    gap: "20px"
+    gap: "20px",
+    borderRadius: 5
   };
 
   const popupStyle = {
@@ -260,6 +268,14 @@ export default function KeychalPage() {
             fontSize: 16
           }}>사용자: {user}</div>
 
+        <button
+          style={{
+            border: "1px solid #ccc",
+            background: "#E0F7FA",
+            fontWeight: "bold"
+          }}
+          onClick={handleSummary}>Summary</button>
+
         </div>
 
     <div style={{ padding: 40, userSelect: "none" }}>
@@ -285,7 +301,11 @@ export default function KeychalPage() {
           ))}
         </div>
 
-        <div>
+        <div
+          style={{
+            display: "flex",
+            gap: 10
+          }}>
           <Calendar
             value={date}
             onChange={(d) => setDate(d)}
@@ -356,17 +376,28 @@ export default function KeychalPage() {
                   <React.Fragment key={k._id}>
 
                     <div
-                      style={{ cursor: "pointer" }}
+                      style={{ 
+                        cursor: "pointer",
+                        fontSize: 14 }}
                       onClick={() => handleClickKeyword(k.keyword)}
                     >
                       {k.keyword}
                     </div>
 
-                    <div>{k.quote.toLocaleString()}</div>
+                    <div
+                      style={{
+                        fontSize: 14
+                      }}>{k.quote.toLocaleString()}</div>
 
-                    <div>{k.item}</div>
+                    <div
+                      style={{
+                        fontSize: 14
+                      }}>{k.item}</div>
 
-                    <div>{k.brand}</div>
+                    <div
+                      style={{
+                        fontSize: 14
+                      }}>{k.brand}</div>
 
                   </React.Fragment>
 
