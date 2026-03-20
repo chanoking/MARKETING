@@ -1,4 +1,4 @@
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useState, useEffect } from 'react';
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
@@ -25,6 +25,8 @@ export default function InflPage(){
     
     const year = date.getFullYear();
     const month = date.getMonth() + 1;
+
+    const navigate = useNavigate();
     
     const [currentYearMonth, setCurrentYearMonth] = useState(`${year}년 ${month}월`);
     const [beforeYearMonth, setBeforeYearMonth] = useState("");
@@ -83,10 +85,12 @@ export default function InflPage(){
             
             setTotalValueByMonth(data.sum);
         }
-
+        
         fetchTotalValue();
     }, [infl, curYear, curMonth])
     
+    // console.log(memo);
+    // console.log(date);
     const formatDate = (yearMonth, offset, option) => {
         let year = +yearMonth.slice(0, 4);
         const indexOfMonth = yearMonth.indexOf("월");
@@ -146,6 +150,10 @@ export default function InflPage(){
         setQuote(quote.toLocaleString());
         setLen(len);
         setKeywordVisibleDays(visibleDays);
+    }
+
+    const handleSummary = () => {
+        navigate("/inflSummary");
     }
 
     const paint = (item) => {
@@ -241,7 +249,7 @@ export default function InflPage(){
                 }}
                 renderDayContents={(day, date) => {
                     const copyDate = new Date(date);
-                    copyDate.setDate(copyDate.getDate() + 1)
+                    copyDate.setHours(9);
                     const d = copyDate.toISOString().slice(0,10);
                     const val = memo[d]; // val은 문자열 또는 배열
 
@@ -285,6 +293,14 @@ export default function InflPage(){
                 <p style={{
                     fontWeight: "bold"
                 }}>{totalValueByMonth}</p>
+                <button
+                    style={{
+                        background: "#F5F5F5",
+                        boder: "1px solid #ccc",
+                        fontWeight: "bold"
+                    }}
+                    onClick={handleSummary}
+                    >Summary</button>
             </div>
             
             {popup && 

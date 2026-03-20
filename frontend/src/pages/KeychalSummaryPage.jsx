@@ -236,14 +236,14 @@ export default function KeychalSummaryPage(){
 
                     <button
                         style={{
-                            fontWeight: "bold",
                             border: "1px solid #ccc",
-                            background: "#ef4444",
+                            fontWeight: "bold",
+                            background: "#2563EB",
                             color: "white"
                         }}
-                        onClick={logout}
+                        onClick={() => {download(summary)}}
                     >
-                        로그아웃
+                        다운로드
                     </button>
 
                     <div
@@ -256,18 +256,20 @@ export default function KeychalSummaryPage(){
                         }}>
                         {user}
                     </div>
-
+                    
                     <button
                         style={{
-                            border: "1px solid #ccc",
                             fontWeight: "bold",
-                            background: "#2563EB",
+                            border: "1px solid #ccc",
+                            background: "#ef4444",
                             color: "white"
                         }}
-                        onClick={() => {download(summary)}}
+                        onClick={logout}
                     >
-                        다운로드
+                        로그아웃
                     </button>
+
+
 
                 </div>
             
