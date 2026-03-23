@@ -217,6 +217,34 @@ const createControllers = (db) => {
         }
     }
 
+    const getInflSummary = async (req, res) => {
+        try{
+            const {influencer} = req.query;
+            const data = await db.collection("Keychal_States").find({influencer}).toArray();
+            const summary = {};
+            for(let doc of data){
+                const [year, month] = [doc.date.slice(0,4), doc.date.slice(5, 7)];
+                const key = `${year}년 ${month}월`
+                const result = await db.collection("Keychal_Keywords").findOne({influencer, keyword: doc.keyword});
+
+                if(!summary[key]) summary[key] = {};
+                if(!summary[key][doc.keyword]){
+                    summary[key][doc.keyword] = {
+                        duration: 0,
+                        item: result.item,
+                        brand: result.brand,
+                        quote: result.quote
+                    }
+                }
+                if(doc.rank > 0) summary[key][doc.keyword].duration++;
+            }
+
+            res.json(summary);
+        }catch(err){
+            res.status(500).json({error: err.message});
+        }
+    }
+
     return {
         getInfluencers,
         getKeywords,
@@ -231,7 +259,8 @@ const createControllers = (db) => {
         getInfoForKeyword,
         getKeywordsByInfl,
         checkConfirm,
-        confirm
+        confirm,
+        getInflSummary
     }
 }
 

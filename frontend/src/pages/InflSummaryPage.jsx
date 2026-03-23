@@ -18,31 +18,9 @@ export default function InflSummaryPage(){
 
     useEffect(() => {
         const fetchSummary = async () => {
-            const res = await fetch(`${import.meta.env.VITE_API_URL}/keychal/influencer?influencer=${infl}`);
+            const res = await fetch(`${import.meta.env.VITE_API_URL}/keychal/inflSummary?influencer=${infl}`);
             const data = await res.json();
-            const summary = {};
-
-            for(let doc of data) {
-                const year = doc.date.slice(0, 4);
-                const month = doc.date.slice(5, 7);
-                const key = `${year}년 ${month}월`;
-                const res = await fetch(`${import.meta.env.VITE_API_URL}/keychal/inflkeywords?influencer=${infl}&keyword=${doc.keyword}`);
-                const data = await res.json();
-
-                
-                if(!summary[key]) summary[key] = {};
-                if(!summary[key][doc.keyword]) {
-                    summary[key][doc.keyword] = {
-                                                    duration: 0,
-                                                    item: data.item,
-                                                    brand: data.brand,
-                                                    quote: data.quote
-                                                }
-                }
-                if(doc.rank > 0) summary[key][doc.keyword].duration++
-            }
-            
-            setSummary(summary);
+            setSummary(data);
         }
         fetchSummary();
     }, [])
@@ -117,7 +95,7 @@ export default function InflSummaryPage(){
                 padding: 10,
                 userSelect: "none"
             }}
-            >
+        >
             <div
                 style={{
                     display: "flex",
@@ -156,37 +134,39 @@ export default function InflSummaryPage(){
                             }}
                         >
                             
+                            <div
+                                style={{
+                                    padding: 10,
+                                    cursor: "pointer",
+                                    borderBottom: "#fff",
+                                    fontSize: 14
+                                }}
+                                onClick={() => {
+                                    setIsOpen(false);
+                                    setSelected("선택");
+                                }}
+                            >
+                                선택
+                            </div>
+
+                            {Object.keys(summary).map((e, i) => (
                                 <div
+                                    key={i}
+                                    onClick={() => {
+                                        setSelected(e);
+                                        setIsOpen(false);
+                                    }}
                                     style={{
                                         padding: 10,
                                         cursor: "pointer",
                                         borderBottom: "#fff",
                                         fontSize: 14
                                     }}
-                                    onClick={() => {
-                                        setIsOpen(false);
-                                        setSelected("선택");
-                                    }}
                                 >
-                                    선택
+                                    {e}
                                 </div>
-                                {Object.keys(summary).map((e, i) => (
-                                    <div
-                                        key={i}
-                                        onClick={() => {
-                                            setSelected(e);
-                                            setIsOpen(false);
-                                        }}
-                                        style={{
-                                            padding: 10,
-                                            cursor: "pointer",
-                                            borderBottom: "#fff",
-                                            fontSize: 14
-                                        }}
-                                    >
-                                        {e}
-                                    </div>
-                                ))}
+                            ))}
+
                         </div>
                     )}
 
@@ -246,35 +226,29 @@ export default function InflSummaryPage(){
                         ))}
                     </div>
 
+                    <>
                     <div
                         style={{
                             marginTop: 30,
-                            display: "flex",
-                            gap: 50,
-                            padding: 10,
-                            justifyContent: "center"
-                    }}>
-                        <h3>공급가액</h3>
-                        <h3>세액</h3>
-                        <h3>합계금액</h3>
-                        <h3>확인</h3>
-                    </div>
-
-                    <div
-                        style={{
-                            display: "flex",
-                            gap: 50,
-                            padding: 15,
-                            paddingLeft: 20,
+                            display: "grid",
+                            gridTemplateColumns: "repeat(4, 1fr)",
+                            gap: 10,
+                            padding: "10px 480px",
                             justifyContent: "center",
                             alignItems: "center",
-                            marginLeft: 30,
-                        }}
-                    >
+                            textAlign: "center"
+                    }}>
+
                         <div
-                            style={{
-                                paddingRight: 10
-                            }}>
+                            className="summary-header">공급가액</div>
+                        <div
+                            className="summary-header">세액</div>
+                        <div
+                            className="summary-header">합계금액</div>
+                        <div
+                            className="summary-header">확인</div>
+                   
+                        <div>
                             {final[0]}
                         </div>
                         <div>
@@ -283,22 +257,26 @@ export default function InflSummaryPage(){
                         <div>
                             {final[2]}
                         </div>
+                
                         {!confirm ? (
+                            
                             <button
-                                style={{
-                                    background: "#4CAF50",
-                                    border: "1px solid #ccc",
-                                    color: "white",
-                                    padding: "8px 16px",
-                                    borderRadius: "4px",
-                                    minWidth: "100px",
-                                    cursor: "pointer"
-                                }}
-                                onClick={() => setIsConfirmClicked(true)}
+                            style={{
+                                background: "#4CAF50",
+                                border: "1px solid #ccc",
+                                color: "white",
+                                padding: "8px 16px",
+                                borderRadius: "4px",
+                                minWidth: "100px",
+                                cursor: "pointer"
+                            }}
+                            onClick={() => setIsConfirmClicked(true)}
                             >
                                 금액확정
                             </button>
+
                         ) : (
+
                             <div
                                 style={{
                                     background: "#E0F2F1",
@@ -311,8 +289,11 @@ export default function InflSummaryPage(){
                             >
                                 금액확정
                             </div>
+
                         )}
+
                     </div>
+                    </> 
                 </>
             )}
 

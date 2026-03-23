@@ -35,3 +35,8 @@
     font-size: 14px;
     border: 1px solid #ccc;
 }
+
+.summary-header {
+    font-size: 20px;
+    font-weight: bold;
+}

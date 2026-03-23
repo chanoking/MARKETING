@@ -21,6 +21,7 @@ export default (controllers, requireToken) => {
   router.get("/keywordInfo", requireToken, controllers.getInfoForKeyword);
   router.get("/inflKeywords", controllers.getKeywordsByInfl);
   router.get("/confirm", controllers.checkConfirm);
+  router.get("/inflSummary", controllers.getInflSummary);
   router.post("/doConfirm", controllers.confirm);
   router.post("/keyword_state_update", requireToken, controllers.updateKeywordStates);
 
