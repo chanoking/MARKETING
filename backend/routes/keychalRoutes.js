@@ -18,7 +18,10 @@ export default (controllers, requireToken) => {
   router.get("/infl/keyword", controllers.getInflTheKeywordStates);
   router.get("/inflTotalValue", controllers.getTotalValueForInflByMonth);
   router.get("/summary", requireToken, controllers.getSummary);
-  router.get("/keywordInfo", requireToken, controllers.getInfoForKeyword)
+  router.get("/keywordInfo", requireToken, controllers.getInfoForKeyword);
+  router.get("/inflKeywords", controllers.getKeywordsByInfl);
+  router.get("/confirm", controllers.checkConfirm);
+  router.post("/doConfirm", controllers.confirm);
   router.post("/keyword_state_update", requireToken, controllers.updateKeywordStates);
 
   return router;

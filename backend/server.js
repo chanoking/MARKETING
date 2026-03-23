@@ -70,9 +70,9 @@ async function startServer() {
     });
     
     // 4️⃣ 서버 실행
-    app.listen(PORT, () => {
-      console.log(`🚀 Server running at http://localhost:${PORT}`);
-    });
+    app.listen(PORT, () =>{
+      console.log(`🚀 Server running at http://localhost:${PORT}`)
+    })
   } catch (err) {
     console.error("❌ MongoDB connection error:", err);
   }

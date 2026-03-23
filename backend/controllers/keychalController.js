@@ -22,6 +22,16 @@ const createControllers = (db) => {
             res.status(500).json({ message: err.message })
         }
     }
+
+    const getKeywordsByInfl = async (req, res) => {
+        try{
+            const {influencer, keyword} = req.query;
+            const data = await db.collection("Keychal_Keywords").findOne({influencer, keyword});
+            res.json(data);
+        }catch(err){
+            res.status(500).json({error: err.mesage});
+        }
+    }
     
     const getKeywordStates = async (req, res) => {
         try {
@@ -181,6 +191,32 @@ const createControllers = (db) => {
         }
     }
 
+    const checkConfirm = async (req, res) => {
+        try{
+            const {influencer, formattedMonth} = req.query;
+            const data = await db.collection("Finalize_Amount").findOne({influencer, formattedMonth});
+
+            res.json(data);
+        }catch(err){
+            res.status(500).json({error: err.message});
+        }
+    }
+
+    const confirm = async (req, res) => {
+        try{
+            const {influencer, formattedMonth, amount} = req.body;
+            await db.collection("Finalize_Amount").insertOne({
+                formattedMonth,
+                influencer,
+                amount,
+                confirm: true
+            })
+            res.status(200).json({message: `금액이 확정되었습니다. ${formattedMonth} 고생하셨습니다:)`});
+        }catch(err){
+            res.status(500).json({error: err.message})
+        }
+    }
+
     return {
         getInfluencers,
         getKeywords,
@@ -192,7 +228,10 @@ const createControllers = (db) => {
         getInflTheKeywordStates,
         getTotalValueForInflByMonth,
         getSummary,
-        getInfoForKeyword
+        getInfoForKeyword,
+        getKeywordsByInfl,
+        checkConfirm,
+        confirm
     }
 }
 

@@ -89,8 +89,6 @@ export default function InflPage(){
         fetchTotalValue();
     }, [infl, curYear, curMonth])
     
-    // console.log(memo);
-    // console.log(date);
     const formatDate = (yearMonth, offset, option) => {
         let year = +yearMonth.slice(0, 4);
         const indexOfMonth = yearMonth.indexOf("월");
@@ -153,7 +151,9 @@ export default function InflPage(){
     }
 
     const handleSummary = () => {
-        navigate("/inflSummary");
+        navigate("/inflSummary",{
+            state: {infl}
+        });
     }
 
     const paint = (item) => {
