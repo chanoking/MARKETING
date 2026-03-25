@@ -12,7 +12,7 @@ const createControllers = (db) => {
     
     const getKeywords = async (req, res) => {
         try {
-            const {influencer_id} = req.query;
+            const {influencer_id} = req.params;
             const keywords = await db.collection("Keychal_Keywords")
                                         .find({influencer_id})
                                         .toArray();
@@ -50,7 +50,7 @@ const createControllers = (db) => {
         }
     }
 
-    const getInflKeywordStates = async (req, res) => {
+    const getStatesByInfluencer = async (req, res) => {
         try{    
             const { influencer } = req.query;
 
@@ -58,11 +58,30 @@ const createControllers = (db) => {
                 return res.status(400).json({message: "influencer required!"})
             }
             
-            const states = await db.collection("Keychal_States").find({ influencer })
-                                    .toArray();
+            const data = await db.collection("Keychal_States").aggregate([
+                {
+                    $match:{
+                        rank:{$gt: 0},
+                        influencer
+                    },
+                },
+                 {
+                     $group:{
+                        _id: "$date",
+                        count: {$sum:1}
+                     }
+                 },
+                 {
+                    $project:{
+                        date: "$_id",
+                        count: 1,
+                        _id: 0
+                    }
+                 }
+            ]).toArray();
 
 
-            res.json(states);
+            res.json(data)
         }catch(err){
             res.status(500).json({message: err.message})
         }
@@ -147,27 +166,55 @@ const createControllers = (db) => {
         }
     }
 
-    const getTotalValueForInflByMonth = async (req, res) => {
+    const getAmountByInfluencerAndMonth = async (req, res) => {
         try{
-            const {influencer, year, month} = req.query;
-            const data = await db.collection("Keychal_States").find({influencer}).toArray();
-            const filteredData = data.filter(d => +d.date.slice(0, 4) === +year &&
-                                    +d.date.slice(5, 7) === +month);
-            
-            let sum = 0;
-
-            for(let d of filteredData){
-                const days = new Date(year, month, 0).getDate();
-                const keyword = await db.collection("Keychal_Keywords").findOne({keyword: d.keyword})
-                const quote = keyword.quote;
-                const dailyV = quote / days;
-                if (d.rank > 0) sum += dailyV
+            const { influencer, year, month } = req.query;
+            const mm = String(month).padStart(2, "0");
+            const lastD = new Date(Number(year), Number(month), 0).getDate();
+            const data = await db.collection("Keychal_States").aggregate([
+            {
+                $match: {
+                    rank: { $gt: 0 },
+                    date: { $regex: `^${year}-${mm}` },
+                    influencer
+                }
+            },
+            {
+                $lookup: {
+                    from: "Keychal_Keywords",
+                    localField: "keyword",
+                    foreignField: "keyword",
+                    as: "keywordInfo"
+                }
+            },
+            {
+                $unwind: "$keywordInfo"
+            },
+            {
+                $group: {
+                    _id: null,
+                    amount: {
+                        $sum: {
+                            $divide: ["$keywordInfo.quote", lastD]
+                        }
+                    },
+                    influencer: {$first: "$influencer"}
+                }
+            },
+            {
+                $project: {
+                    influencer: 1,
+                    amount: 1,
+                    _id: 0
+                }
             }
+            ]).toArray();
+
             
-            res.json({sum: Math.round(sum).toLocaleString()});
+            res.json(data);
 
         }catch(err){
-            res.status(500).json({error: err.message});
+            res.status(500).json(data);
         }
     }
 
@@ -191,7 +238,7 @@ const createControllers = (db) => {
         }
     }
 
-    const checkConfirm = async (req, res) => {
+    const isMonthlyAmountFinalized  = async (req, res) => {
         try{
             const {influencer, formattedMonth} = req.query;
             const data = await db.collection("Finalize_Amount").findOne({influencer, formattedMonth});
@@ -202,7 +249,7 @@ const createControllers = (db) => {
         }
     }
 
-    const confirm = async (req, res) => {
+    const finalizeMonthlyAmount = async (req, res) => {
         try{
             const {influencer, formattedMonth, amount} = req.body;
             await db.collection("Finalize_Amount").insertOne({
@@ -217,29 +264,138 @@ const createControllers = (db) => {
         }
     }
 
-    const getInflSummary = async (req, res) => {
-        try{
-            const {influencer} = req.query;
-            const data = await db.collection("Keychal_States").find({influencer}).toArray();
-            const summary = {};
-            for(let doc of data){
-                const [year, month] = [doc.date.slice(0,4), doc.date.slice(5, 7)];
-                const key = `${year}년 ${month}월`
-                const result = await db.collection("Keychal_Keywords").findOne({influencer, keyword: doc.keyword});
 
-                if(!summary[key]) summary[key] = {};
-                if(!summary[key][doc.keyword]){
-                    summary[key][doc.keyword] = {
-                        duration: 0,
-                        item: result.item,
-                        brand: result.brand,
-                        quote: result.quote
+    const getKeywordsSummary = async (req, res) => {
+        try{
+            const {influencer, month, year} = req.query;
+            const lastDay = new Date(+year, +month, 0).getDate();
+            const mm = String(month).padStart(2, "0");
+            const data = await db.collection("Keychal_States").aggregate([
+                {
+                    $match:{
+                        influencer,
+                        date:{$regex: `^${year}-${mm}`},
+                        rank:{$gt: 0}
+                    }   
+                },
+                {
+                    $lookup:{
+                        from: "Keychal_Keywords",
+                        localField: "keyword",
+                        foreignField: "keyword",
+                        as: "keywordInfo"
+                    }
+                },
+                {
+                    $unwind: "$keywordInfo"
+                },
+                {
+                    $group:{
+                        _id: "$keyword",
+                        quote: {
+                            $first:"$keywordInfo.quote"
+                        },
+                        duration: {
+                            $sum:1
+                        },
+                        amount: {
+                            $sum:{
+                                $divide:["$keywordInfo.quote", lastDay]
+                            }
+                        },
+                        durationDays:{
+                            $push: "$date"
+                        },
+                        brand: {
+                            $first: "$keywordInfo.brand"
+                        },
+                        item: {
+                            $first: "$keywordInfo.item"
+                        },
+                        keyword: {
+                            $first: "$keywordInfo.keyword"
+                        }
+                    }
+                },
+                {
+                    $project:{
+                        keyword: "$_id",
+                        quote: 1,
+                        dailyAmount: {$divide: ["$quote", lastDay]},
+                        duration: 1,
+                        amount: 1,
+                        durationDays:{
+                            $map:{
+                                input: "$durationDays",
+                                as: "d",
+                                in: {$toInt: {
+                                    $substr:[
+                                        "$$d", 8 , 2
+                                    ]
+                                }}
+                            }
+                        },
+                        item: 1,
+                        keyword: 1,
+                        brand: 1,
+                        _id: 0 
+                    }
+                },
+                {
+                    $set:{
+                        durationDays:{$sortArray:{input: "$durationDays", sortBy: 1}}
                     }
                 }
-                if(doc.rank > 0) summary[key][doc.keyword].duration++;
-            }
-
-            res.json(summary);
+            ]).toArray();
+            
+            res.json(data);
+        }catch(err){
+            res.status(500).json({error: err.message});
+        }
+    }
+    
+    const getKeywordsByRank = async (req, res) => {
+        const {influencer, year, month} = req.query;
+        const mm = String(month).padStart(2, "0");
+        try{
+            const data = await db.collection("Keychal_States").aggregate([
+                {
+                    $match: {
+                        influencer,
+                        date:{$regex: `^${year}-${mm}`}
+                    }
+                },
+                {
+                    $group:{
+                        _id: "$date",
+                        positive: {$push: {
+                            $cond:[
+                                {$gt: ["$rank", 0]},
+                                "$keyword",
+                                "$$REMOVE"
+                            ]
+                        }},
+                        negative: {
+                            $push:{
+                                $cond:[
+                                    {$lte: ["$rank", 0]},
+                                    "$keyword",
+                                    "$$REMOVE"
+                                ]
+                            }
+                        }
+                    }
+                },
+                {
+                    $project:{
+                        date: "$_id",
+                        positive: 1,
+                        negative: 1,
+                        _id: 0
+                    }
+                }
+            ]).toArray();
+            res.json(data);
         }catch(err){
             res.status(500).json({error: err.message});
         }
@@ -248,19 +404,20 @@ const createControllers = (db) => {
     return {
         getInfluencers,
         getKeywords,
+        getKeywordsByInfl,
         getKeywordStates,
+        getStatesByInfluencer,
+        getInflTheKeywordStates,
         countVisibleKeywords,
         getAllStates,
         updateKeywordStates,
-        getInflKeywordStates,
-        getInflTheKeywordStates,
-        getTotalValueForInflByMonth,
+        getAmountByInfluencerAndMonth,
         getSummary,
         getInfoForKeyword,
-        getKeywordsByInfl,
-        checkConfirm,
-        confirm,
-        getInflSummary
+        isMonthlyAmountFinalized,
+        finalizeMonthlyAmount,
+        getKeywordsSummary,
+        getKeywordsByRank
     }
 }
 

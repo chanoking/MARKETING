@@ -16,16 +16,9 @@
 .el {
     border: 1px solid #ccc;
     padding: 15px;
-    width: 170px;
+    width: 190px;
     text-align: center;
-    border-right: 0px;
-}
-
-.els {
-    border: 1px solid #ccc;
-    padding: 15px;
-    width: 170px;
-    text-align: center;
+    /* border-right: 0px; */
 }
 
 .prompt-button {
