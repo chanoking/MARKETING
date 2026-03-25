@@ -5,9 +5,7 @@ import React from "react";
 
 
 export default function InflSummaryPage(){
-    const [isOpen, setIsOpen] = useState(false);
     const [summary, setSummary] = useState({});
-    const [search, setSearch] = useState(false);
     const [final, setFinal] = useState(["", "", ""]);
     const [confirm, setConfirm] = useState(false);
     const [isConfirmClicked, setIsConfirmClicked] = useState(false);

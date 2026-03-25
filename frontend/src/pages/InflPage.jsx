@@ -15,6 +15,7 @@ export default function InflPage(){
     const [amountByMonth, setAmountByMonth] = useState(0);
     const [keyword, setKeyword] = useState({});
     const [groupedKeywordsByRank, setGroupedKeywordsByRank] = useState([]);
+    const [selectedKeyword, setSelectedKeyword] = useState("");
     
     const location = useLocation();
     const influencer = location.state?.influencer;
