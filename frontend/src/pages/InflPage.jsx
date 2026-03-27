@@ -129,7 +129,7 @@ export default function InflPage(){
     const handleClickKeyword = (keyword) => {
         setSelectedKeyword(keyword);
         setKeywordPopup(true);
-        setKeyword(keywordsSummary.find(summary => summary.keyword === keyword));
+        setKeyword(keywordsSummary.find(summary => summary?.keyword === keyword));
     }
 
     const handleSummary = () => {
@@ -171,7 +171,7 @@ export default function InflPage(){
                                 fontWeight:600,
                                 cursor: "pointer"
                                 }}
-                            onClick={() => {handleClickKeyword(k.keyword, k.quote)}}
+                            onClick={() => {handleClickKeyword(k?.keyword)}}
                         >
                             {k.keyword}
                         </div>
@@ -297,22 +297,22 @@ export default function InflPage(){
 
                                     <div className="quote">
                                         <h3>견적</h3>
-                                        <p>{Math.round(keyword.quote).toLocaleString()}</p>
+                                        <p>{Math.round(keyword?.quote).toLocaleString()}</p>
                                     </div>
 
                                     <div className="dailyAmount">
                                         <h3>일별금액</h3>
-                                        <p>{Math.round(keyword.dailyAmount).toLocaleString()}</p>
+                                        <p>{Math.round(keyword?.dailyAmount).toLocaleString()}</p>
                                     </div>
 
                                     <div className="duration">
                                         <h3>유지일수</h3>
-                                        <p>{keyword.duration}</p>
+                                        <p>{keyword?.duration}</p>
                                     </div>
 
                                     <div className="amount">
                                         <h3>금액</h3>
-                                        <p>{Math.round(keyword.amount).toLocaleString()}</p>
+                                        <p>{Math.round(keyword?.amount).toLocaleString()}</p>
                                     </div>
 
                                 </div>
@@ -320,7 +320,7 @@ export default function InflPage(){
                                 <div>
                                     <h3>노출일자</h3>
                                     <div>
-                                        {keyword.durationDays.join(" ")}
+                                        {keyword?.durationDays.join(" ")}
                                     </div>
                                 </div>
                                 
