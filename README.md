@@ -33,6 +33,8 @@
 + 써머리 클릭 시 페이지 이동
 + 인플루언서가 직접 금액 확정 클릭 가능
 
+</br>
+
 <img width="385" height="278" alt="image" src="https://github.com/user-attachments/assets/2e204066-a44f-4c7b-9f83-6b8409ac4ef8" />
 
 + 키워드 클릭 시 상세내역 popup
