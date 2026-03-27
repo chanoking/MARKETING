@@ -22,7 +22,7 @@
 <img width="916" height="516" alt="image" src="https://github.com/user-attachments/assets/988e63f8-55b0-456f-bfc5-129e75b5955a" />
 <img width="1834" height="715" alt="image" src="https://github.com/user-attachments/assets/c101ac22-1ffd-4b22-bf8c-b87f1a3974c1" />
 
-+ 관리자 페이지에서 써머리 클릭 시 월, 인플루언서 별 조회 및 다운로드 가능
++ 써머리 클릭 시 페이지 이동 후 월, 인플루언서 별 조회 및 다운로드 가능
 
 
 <img width="1635" height="633" alt="image" src="https://github.com/user-attachments/assets/a87ec5c8-3d52-4b9e-a529-c2b785b61ee7" />
