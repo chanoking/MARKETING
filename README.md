@@ -1,6 +1,6 @@
+### 관리자 페이지
 <img width="1319" height="711" alt="image" src="https://github.com/user-attachments/assets/7187977b-e974-45be-a779-a62e67e46809" />
 
-### 관리자 페이지
 + 인플루언서 표시
 + 월을 기반으로 전체 금액 표시
 + spinner를 통해 월 선택
@@ -25,9 +25,11 @@
 + 써머리 클릭 시 페이지 이동 후 월, 인플루언서 별 조회 및 다운로드 가능
 
 
-<img width="1635" height="633" alt="image" src="https://github.com/user-attachments/assets/a87ec5c8-3d52-4b9e-a529-c2b785b61ee7" />
+</br>
 
 ### 인플루언서 페이지
+<img width="1635" height="633" alt="image" src="https://github.com/user-attachments/assets/a87ec5c8-3d52-4b9e-a529-c2b785b61ee7" />
+
 + 써머리 클릭 시 페이지 이동
 + 인플루언서가 직접 금액 확정 클릭 가능
 
