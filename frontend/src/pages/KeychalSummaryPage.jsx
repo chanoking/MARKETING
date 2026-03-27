@@ -104,14 +104,25 @@ export default function KeychalSummaryPage(){
             
             const amount = filteredByInfluencer.reduce((acc, cur) => acc + (cur.amount || 0), 0);
 
-            console.log(amount)
             setAmount(amount);
         }
 
     }
 
     const handleDownload = () => {
+        if(!isSearchClicked){
+            alert("요청하신 내용이 없습니다.");
+            return;
+        }
+        const data = selectedInfluencer === "전체" ? 
+                    selectedSummaryByMonth : selectedInfluencer === "Group By" ? 
+                    selectedAmountGroupedByMonthAndInfluencer : summaryByMonthAndInfluencer;
         
+        const worksheet = XLSX.utils.json_to_sheet(data);
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, "Sheet1");
+
+        XLSX.writeFile(workbook, "data.xlsx")
     }
 
     const handleLogout = () => {
