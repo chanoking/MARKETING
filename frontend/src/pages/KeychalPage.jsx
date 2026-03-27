@@ -10,33 +10,30 @@ export default function KeychalPage() {
   const today = new Date().toISOString().split("T")[0];
 
   const [influencers, setInfluencers] = useState([]);
-  const [selectedInflKeywords, setSelectedInflKeywords] = useState([]);
-  const [popupOpen, setPopupOpen] = useState(false);
-  const [selectedInfl, setSelectedInfl] = useState(null);
-  const [selectedKeyword, setSelectedKeyword] = useState(null);
-  const [keywordStates, setKeywordStates] = useState([]);
-  const [popupOpenForState, setPopupOpenForState] = useState(false);
-  const [startDate, setStartDate] = useState(today);
-  const [endDate, setEndDate] = useState(today);
   const [date, setDate] = useState(new Date());
-  const [visibleSum, setVisibleSum] = useState({});
   const [selectedDate, setSelectedDate] = useState(null);
-  const [showPopup, setShowPopup] = useState(null);
-  const [states, setStates] = useState([[], []]);
-  const [isEditing, setIsEditing] = useState(false);
-  const [editedStates, setEditedStates] = useState([]);
   const [user, setUser] = useState(useLocation().state?.user);
-  const [clickedSummary, setClickedSummary] = useState(false);
+  const [keywordsGroupedByRank, setKeywordsGroupedByRank] = useState([]);
+  const [selectedKeywordsGroupedByRank, setSelectedKeywordsGroupedByRank] = useState({});
+  const [isKeywordPopupOpen, setIsKeywordPopupOpen] = useState(false);
+  const [selectedAmount, setSelectedAmount] = useState(0);
+  const [amountByMonth, setAmountByMonth] = useState([]);
 
   const token = localStorage.getItem("token");
   const navigate = useNavigate();
+  const year = date.getFullYear();
+  const month = date.getMonth() + 1;
+  
+  const [formattedMonth, setFormattedMonth] = useState(`${year}년 ${month}월`);
+  const [beforeFormattedMonth, setBeforeFormattedMonth] = useState(`${month - 1 === 0 ? `${year - 1}년 12월` : `${year}년 ${month - 1}월`}`);
+  const [afterFormattedMonth, setAfterFormattedMonth] = useState(`${month + 1 === 13 ? `${year + 1}년 1월` : `${year}년 ${month + 1}월`}`);
 
   useEffect(() => {
     if(!token){
       navigate("/login");
     }
   }, []);
-
+  
   useEffect(() => {
     async function fetchInfls() {
       const res = await fetch(`${import.meta.env.VITE_API_URL}/keychal/influencers`, {
@@ -49,48 +46,62 @@ export default function KeychalPage() {
     }
     fetchInfls();
   }, []);
-
+  
   useEffect(() => {
-    const fetchSums = async () => {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/keychal/states/cal`, {
+    const fetchGroupedKeywordsByRank = async () => {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/keychal/all-keywords-grouped-by-rank`, {
         headers: {
           Authorization: `Bearer ${token}`
         }
       });
       const data = await res.json();
-      setVisibleSum(data);
-    };
-    fetchSums();
-  }, []);
+      setKeywordsGroupedByRank(data);
+    }
+    fetchGroupedKeywordsByRank();
+  }, [])
+
+  useEffect(() => {
+    const fetchFullAmountByMonth = async () => {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/keychal/amount-by-month`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      })
+      const data = await res.json();
+      
+      setAmountByMonth(data);
+      getAmount(data)
+      
+    }
+    
+    fetchFullAmountByMonth();
+  }, [])
+  
+  useEffect(() => {
+    getAmount(amountByMonth)
+  }, [formattedMonth])
+  
+  const getAmount = (data) => {
+    const [year, month] = formattedMonth
+      .replace("년 ", "-")
+      .replace("월", "")
+      .split("-");
+  
+    const document = data.find((doc) => {
+      return (
+        doc.date.slice(0, 4) === year &&
+        doc.date.slice(5, 7) === month.padStart(2, "0")
+      );
+    });
+  
+    setSelectedAmount(Math.round(document?.amount).toLocaleString());
+  }
 
   const logout = () => {
     localStorage.removeItem("token");
     setUser(null)
     navigate("/login")
   }
-
-  const fetchSeparateKeywords = async (date) => {
-    const res = await fetch(`${import.meta.env.VITE_API_URL}/keychal/statesall?date=${date}`, {
-      headers: {
-        Authorization: `Bearer ${token}`
-      }
-    });
-    const data = await res.json();
-
-    const result = [[], []];
-
-    data.forEach((doc) => {
-      if (date === doc["date"]) {
-        if (doc["rank"] > 0) {
-          result[0].push([doc["keyword"], doc["influencer"]]);
-        } else {
-          result[1].push([doc["keyword"], doc["influencer"]]);
-        }
-      }
-    });
-
-    setStates(result);
-  };
 
   const handleClickDay = async (date) => {
     let copyDate = new Date(date);
@@ -100,103 +111,39 @@ export default function KeychalPage() {
     copyDate = copyDate.toISOString().split("T")[0];
 
     setSelectedDate(copyDate);
-    setShowPopup(true);
+    setIsKeywordPopupOpen(true);
 
-    await fetchSeparateKeywords(copyDate);
+    setSelectedKeywordsGroupedByRank(keywordsGroupedByRank.find((doc) => doc.date === copyDate));
   };
 
-  const handleStartChange = (e) => {
-    const value = e.target.value;
-    setStartDate(value);
+  const clickArrow = (formattedMonth, offset, option) => {
+    let year = +formattedMonth.slice(0, 4);
+    const indexOfMonth = formattedMonth.indexOf("월");
+    const month = +formattedMonth.slice(6, indexOfMonth);
 
-    if (endDate && value > endDate) {
-      setEndDate(value);
+    let shiftedMonth = month + offset;
+
+    while(shiftedMonth > 12){
+      shiftedMonth -= 12;
+      year += 1;
     }
-  };
 
-  const handleEndChange = (e) => {
-    const value = e.target.value;
-    setEndDate(value);
-
-    if (startDate && startDate > endDate) {
-      setStartDate(value);
+    while(shiftedMonth < 1){
+      shiftedMonth += 12;
+      year -= 1;
     }
-  };
 
-  const fetchInflKeywords = async (infl) => {
-    const res = await fetch(
-      `${import.meta.env.VITE_API_URL}/keychal/keywords?influencer_id=${infl._id}`, {
-        headers:{
-          Authorization: `Bearer ${token}`
-        }
-      }
-    );
-    const data = await res.json();
-    setSelectedInflKeywords(data);
-  };
-
-  const fetchStateForKeyword = async (keyword) => {
-    const res = await fetch(
-      `${import.meta.env.VITE_API_URL}/keychal/keyword/states?keyword=${keyword}`, {
-        headers:{
-          Authorization: `Bearer ${token}`
-        }
-      }
-    );
-    const data = await res.json();
-
-    setKeywordStates(data);
-  };
-
-  const handleClickInfl = async (infl) => {
-    setSelectedInfl(infl);
-    setPopupOpen(true);
-    await fetchInflKeywords(infl);
-  };
-
-  const handleClickKeyword = async (keyword) => {
-    setSelectedKeyword(keyword);
-    setPopupOpenForState(true);
-    await fetchStateForKeyword(keyword);
-  };
-
-  const handleSave = async () => {
-    const res = await fetch(
-      `${import.meta.env.VITE_API_URL}/keychal/keyword_state_update`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`
-
-        },
-        body: JSON.stringify({
-          editedStates
-        })
-      }
-    );
-
-    const data = await res.json();
-
-    alert(data.message);
-    setSelectedInflKeywords(editedStates);
-    setIsEditing(false);
-  };
-
-  const handleSummary = () => {
-    navigate("/keychalSummary", {
-      state: {user}
-    })
+    if(!option){
+      setFormattedMonth(`${year}년 ${shiftedMonth}월`);
+      clickArrow(`${year}년 ${shiftedMonth}월`, -1, -1);
+      clickArrow(`${year}년 ${shiftedMonth}월`, 1, 1);
+    }else if(offset === -1) {
+      setBeforeFormattedMonth(`${year}년 ${shiftedMonth}월`);
+    }else{
+      setAfterFormattedMonth(`${year}년 ${shiftedMonth}월`);
+    }
   }
 
-  const buttonStyle = {
-    height: "22px",
-    fontSize: "12px",
-    padding: "0px",
-    width: "60px",
-    border: "1px solid #000",
-    margin: 2
-  };
 
   const overlayStyle = {
     position: "fixed",
@@ -219,93 +166,29 @@ export default function KeychalPage() {
     borderRadius: 5
   };
 
-  const popupStyle = {
-    position: "fixed",
-    top: "50%",
-    left: "50%",
-    transform: "translate(-50%, -50%)",
-    background: "ivory",
-    padding: "20px",
-    border: "1px solid #ccc",
-    zIndex: 1000,
-    width: 600,
-    borderRadius: 5,
-    fontStyle: "italic"
-  };
-
   return (
-    <div
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        gap: 200,
-        userSelect: "none"
-      }}>
-      
-      <div
-        style={{
-          display: "flex",
-          gap: 20
-        }}>
+    <div style={{padding: 20, userSelect: "none"}}>
+    
+      <div className="keychal-header">
+        <button className="logout">로그아웃</button>
+        <div className="user">사용자: {user}</div>
+        <button className="summary" onClick={() => navigate("/keychalSummary", {state:{user, amountByMonth, influencers}})}>Summary</button>
+      </div>
 
-        <button
-          style={{
-            padding: 10,
-            width: 100,
-            height: 40,
-            background: "#e74c3c",
-            color: "white",
-            fontWeight: 1000,
-            marginLeft: 40 
-          }}
-          onClick={logout}
-          >로그아웃</button>
-
-        <div
-          style={{
-            padding: 8,
-            fontWeight: 1000,
-            fontSize: 16
-          }}>사용자: {user}</div>
-
-        <button
-          style={{
-            border: "1px solid #ccc",
-            background: "#E0F7FA",
-            fontWeight: "bold"
-          }}
-          onClick={handleSummary}>Summary</button>
-
-        </div>
-
-    <div style={{ padding: 40, userSelect: "none" }}>
-
-      <div style={{ display: "flex" }}>
-
-        <div style={{ marginRight: 20 }}>
-          {influencers.map((infl) => (
-            <div
-              key={infl._id}
-              onClick={() => handleClickInfl(infl)}
-              style={{
-                border: "2px solid #ccc",
-                padding: 10,
-                cursor: "pointer",
-                marginBottom: "10px",
-                background: selectedInfl?._id === infl._id ? "#e6f3ff" : "white",
-                fontWeight: "bold"
-              }}
-            >
-              {infl.influencer}
-            </div>
+      <div className="keychal-body">
+        <div className="influencers">
+          {influencers.map((i, idx) => (
+            <div 
+              key={idx} 
+              className="influencer"
+              onClick={() => navigate("/influencer", {
+                state: {influencer: i}
+              })}
+              >{i.influencer}</div>
           ))}
         </div>
 
-        <div
-          style={{
-            display: "flex",
-            gap: 10
-          }}>
+        <div className="keychal-calendar">
           <Calendar
             value={date}
             onChange={(d) => setDate(d)}
@@ -317,192 +200,81 @@ export default function KeychalPage() {
                 const copyDate = new Date(date);
                 copyDate.setDate(copyDate.getDate() + 1)
                 const d = copyDate.toISOString().split("T")[0];
-                const note = visibleSum[d];
+                const note = keywordsGroupedByRank.find((doc) => doc.date === d)?.duration;
                 return note ? (
-                  <div className="tile-note">{note}</div>
+                  <div className="tile-note">valid: {note}</div>
                 ) : null
               }
             }}
-          />
+          /> 
+        </div>
 
-          {showPopup && (
-            <div style={popupStyle}>
+        <div className="wheel-picker" style={{display: "flex", flexDirection: "column", gap: 20, }}>
+            <div
+              style={{cursor: "pointer"}}
+              onClick={() => clickArrow(formattedMonth, -1, 0)}>▲</div>
+        
+            <div style={{fontSize: 20, opacity: 0.45}}>{beforeFormattedMonth}</div>
+            <div style={{fontSize: 30, fontWeight: "bold"}}>{formattedMonth}</div>
+            <div style={{fontSize: 20, opacity: 0.45}}>{afterFormattedMonth}</div>
+        
+            <div
+              style={{cursor: "pointer"}}
+              onClick={() => clickArrow(formattedMonth, 1, 0)}>▼</div>
+        </div>
 
-              <h1 style={{ fontSize: 15 }}>{selectedDate}</h1>
-
-              <div style={{ display: "flex", gap: 130 }}>
-                <h2>Positive</h2>
-                <h2>Negative</h2>
-              </div>
-
-              <div style={{ display: "flex", gap: 40 }}>
-
-                <div>
-                  {states[0]?.map((key_infl) => (
-                    <p key={key_infl[0]}>{key_infl[0]}_{key_infl[1]}</p>
-                  ))}
-                </div>
-
-                <div>
-                  {states[1]?.map((key_infl) => (
-                    <p key={key_infl[0]}>{key_infl[0]}_{key_infl[1]}</p>
-                  ))}
-                </div>
-
-              </div>
-
-              <button onClick={() => setShowPopup(false)} style={buttonStyle}>닫기</button>
-
-            </div>
-          )}
+        <div className="amount-summary">
+            <h2>금액</h2>
+            <p style={{fontSize: 25, fontWeight: "bold"}}>{selectedAmount}</p>
         </div>
 
       </div>
 
-      {popupOpen && selectedInfl && (
-        <div style={overlayStyle}>
-          <div style={popupInnerStyle}>
+      {isKeywordPopupOpen && (
+        <div className="popup">
+          <h1 style={{ fontSize: 15 }}>{selectedDate}</h1>
+          
+          <div
+            style={{
+              display:"flex",
+              gap: 30
+            }}>
 
-            <div style={{fontWeight: 600}}>KEYWORD</div>
-            <div style={{fontWeight: 600}}>QUOTE</div>
-            <div style={{fontWeight: 600}}>ITEM</div>
-            <div style={{fontWeight: 600}}>BRAND</div>
-
-            {!isEditing ? (
-
-              <>
-                {selectedInflKeywords.map((k) => (
-
-                  <React.Fragment key={k._id}>
-
-                    <div
-                      style={{ 
-                        cursor: "pointer",
-                        fontSize: 14 }}
-                      onClick={() => handleClickKeyword(k.keyword)}
-                    >
-                      {k.keyword}
-                    </div>
-
-                    <div
-                      style={{
-                        fontSize: 14
-                      }}>{k.quote.toLocaleString()}</div>
-
-                    <div
-                      style={{
-                        fontSize: 14
-                      }}>{k.item}</div>
-
-                    <div
-                      style={{
-                        fontSize: 14
-                      }}>{k.brand}</div>
-
-                  </React.Fragment>
-
-                ))}
-
+              <div>
+                <h2>Positive</h2>
                 <div>
-
-                  <button
-                    style={buttonStyle}
-                    onClick={() => {
-                      setPopupOpen(false);
-                      setSelectedInfl(null);
-                    }}
-                  >
-                    cancel
-                  </button>
-
-                  <button
-                    style={buttonStyle}
-                    onClick={() => {
-                      setEditedStates(selectedInflKeywords.map((k) => ({ ...k })));
-                      setIsEditing(true);
-                    }}
-                  >
-                    FIX
-                  </button>
-
+                  {selectedKeywordsGroupedByRank?.positive.map((keyword, idx) => (
+                    <div
+                      key={idx}
+                      style={{
+                      fontFamily: '"Fira Code", "JetBrains Mono", monospace',
+                      border: "1px solid #ccc"
+                      }}>{keyword}</div>
+                    ))}
                 </div>
+              </div>
 
-              </>
-
-            ) : (
-
-              <>
-                {editedStates.map((k, idx) => (
-
-                  <React.Fragment key={k._id}>
-
-                    <input
-                      value={k.keyword}
-                      onChange={(e) => {
-                        const copy = [...editedStates];
-                        copy[idx].keyword = e.target.value;
-                        setEditedStates(copy);
-                      }}
-                    />
-
-                    <input
-                      value={k.quote}
-                      onChange={(e) => {
-                        const copy = [...editedStates];
-                        copy[idx].quote = e.target.value;
-                        setEditedStates(copy);
-                      }}
-                    />
-
-                    <input
-                      value={k.item}
-                      onChange={(e) => {
-                        const copy = [...editedStates];
-                        copy[idx].item = e.target.value;
-                        setEditedStates(copy);
-                      }}
-                    />
-
-                    <input
-                      value={k.brand}
-                      onChange={(e) => {
-                        const copy = [...editedStates];
-                        copy[idx].brand = e.target.value;
-                        setEditedStates(copy);
-                      }}
-                    />
-
-                  </React.Fragment>
-
-                ))}
-
+              <div>
+                <h2>Negative</h2>
                 <div>
-
-                  <button
-                    style={buttonStyle}
-                    onClick={() => setIsEditing(false)}
-                  >
-                    취소
-                  </button>
-
-                  <button
-                    style={buttonStyle}
-                    onClick={handleSave}
-                  >
-                    Save
-                  </button>
-
+                  {selectedKeywordsGroupedByRank?.negative.map((keyword, idx) => (
+                    <div
+                      key={idx} 
+                      style={{
+                      fontFamily: '"Fira code", "JetBrains Mono", monospace',
+                      border:"1px solid #ccc"
+                      }}>{keyword}</div>
+                  ))}
                 </div>
+              </div>
+            
+            </div>
 
-              </>
-
-            )}
+            <button className="button" onClick={() => setIsKeywordPopupOpen(false)}>Close</button>
 
           </div>
-        </div>
-      )}
+        )}
 
     </div>
-    </div>
-  );
+  )
 }

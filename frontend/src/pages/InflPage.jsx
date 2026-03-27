@@ -87,7 +87,7 @@ export default function InflPage(){
     useEffect(() => {
         const fetchGroupedKeywordsByRank = async () => {
             const params = new URLSearchParams({ influencer: infl, year: curYear, month: curMonth });
-            const res = await fetch(`${import.meta.env.VITE_API_URL}/keychal/keywords-grouped-by-rank?${params}`);
+            const res = await fetch(`${import.meta.env.VITE_API_URL}/keychal/influencer/keywords-grouped-by-rank?${params}`);
             const data = await res.json();
   
             setGroupedKeywordsByRank(data);
@@ -318,7 +318,7 @@ export default function InflPage(){
                                 </div>
 
                                 <div>
-                                    <h3>노출 날짜</h3>
+                                    <h3>노출일자</h3>
                                     <div>
                                         {keyword.durationDays.join(" ")}
                                     </div>

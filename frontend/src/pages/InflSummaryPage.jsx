@@ -81,6 +81,7 @@ export default function InflSummaryPage(){
                     placeItems: "center"
                     }}
             >
+                
                 <h3>KEYWORD</h3>
                 <h3>ITEM</h3>
                 <h3>BRAND</h3>
@@ -100,7 +101,7 @@ export default function InflSummaryPage(){
                     <div className="el">{formatNumber(keySummary.amount)}</div>
                 </React.Fragment>
                 ))}
-
+            
             </div>
 
             <div

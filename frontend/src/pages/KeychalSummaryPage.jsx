@@ -6,318 +6,306 @@ import React from "react";
 import * as XLSX from "xlsx";
 
 export default function KeychalSummaryPage(){
-    const [summary, setSummary] = useState([]);
     const [selected, setSelected] = useState("선택");
     const [isOpen, setIsOpen] = useState(false);
-    const [user, setUser] = useState(useLocation().state?.user);
-    const [selectedSearch, setSelectedSearch] = useState(false);
-
+    const [selectedInfluencer, setSelectedInfluencer] = useState("전체")
+    const [isOpenB, setIsOpenB] = useState(false);
+    const [formattedMonths, setFormattedMonths] = useState([]);
+    const [summaryByMonth, setSummaryByMonth] = useState([]);
+    const [selectedSummaryByMonth, setSelectedSummaryByMonth] = useState([]);
+    const [isSearchClicked, setIsSearchClicked] = useState(false);
+    const [amountByMonth, setAmountByMonth] = useState([]);
+    const [amount, setAmount] = useState(0);
+    const [influencers, setInfluencers] = useState([]);
+    const [summaryByMonthAndInfluencer, setSummaryByMonthAndInfluencer] = useState([]);
+    const [amountGroupedByMonthAndInfluencer, setAmountGroupedByMonthAndInfluencer] = useState([]);
+    const [selectedAmountGroupedByMonthAndInfluencer, setSelectedAmountGroupedByMonthAndInfluencer] = useState([]);
+    
+    const location = useLocation();
     const navigate = useNavigate();
+    const {user} = location.state || {};
 
-    const calDailyValForKey = (quote) => {
-        if(selected === "선택") return
-        const year = selected.slice(0,4);
-        const month = selected.slice(5, 7);
-        const lastDay = new Date(year, month, 0).getDate();
-        
-        return Math.round(quote / lastDay);
-    }
+    useEffect(() => {
+        const makeFormattedMonths = () => {
+            const {amountByMonth} = location.state;
+            const formattedMonths = amountByMonth.map(doc => doc["date"]);
+
+            setAmountByMonth(amountByMonth);
+            setFormattedMonths(formattedMonths);
+        }
+
+        const makeInfluencers = () => {
+            const {influencers} = location.state;
+            setInfluencers(influencers);
+        }
+
+        makeFormattedMonths();
+        makeInfluencers();
+    }, [])
 
     useEffect(() => {
         const token = localStorage.getItem("token");
-        if (!token) return;
+        const fetchSummaryByMonth = async () => {
+            const res = await fetch(`${import.meta.env.VITE_API_URL}/keychal/summary-by-month`,{
+                headers:{
+                    Authorization: `Bearer ${token}`
+                }
+            })
+            const data = await res.json();
 
-        try {
-            const decoded = jwtDecode(token);
-            const expireTime = decoded.exp * 1000;
-            const now = Date.now();
-
-            const remaining = expireTime - now;
-
-            if (remaining <= 0) {
-                logout();
-            } else {
-                const timer = setTimeout(() => {
-                    logout();
-                }, remaining);
-
-                return () => clearTimeout(timer);
-            }
-        } catch (e) {
-            logout();
+            setSummaryByMonth(data)
         }
-    }, []);
+        fetchSummaryByMonth();
+    }, [])
 
     useEffect(() => {
-        const fetchSummary = async () => {
-            const token = localStorage.getItem("token");
-            const res = await fetch(`${import.meta.env.VITE_API_URL}/keychal/summary`, {
-                headers: {
+        const token = localStorage.getItem("token");
+        const fetchAmountByMonthAndInfluencer = async () => {
+            const res = await fetch(`${import.meta.env.VITE_API_URL}/keychal/amount-by-month-influencer`,{
+                headers:{
                     Authorization: `Bearer ${token}`
                 }
             });
             const data = await res.json();
-            const summary = {};
 
-            const cache = {};
-            
-            const promises = data.map(async (doc) => {
-                if(!cache[doc.keyword]){
-                    const res = await fetch(`${import.meta.env.VITE_API_URL}/keychal/keywordInfo?keyword=${doc.keyword}`, {
-                        headers: {
-                            Authorization: `Bearer ${token}`
-                        }
-                    });
-                    cache[doc.keyword] = await res.json();                    
-                }
-                
-                return {doc, keywordInfo: cache[doc.keyword]};
-            });
-
-            const results = await Promise.all(promises);
-
-            results.forEach(({ doc, keywordInfo }) => {
-                const year = doc.date.slice(0, 4);
-                const month = doc.date.slice(5, 7);
-                const dateKey = `${year}년 ${month}월`;
-    
-                if (!summary[dateKey]) summary[dateKey] = {}; // 날짜 객체 초기화
-                if (!summary[dateKey][doc.keyword]) {
-                    summary[dateKey][doc.keyword] = {
-                        duration: 0,
-                        influencer: doc.influencer,
-                        quote: keywordInfo.quote,
-                        brand: keywordInfo.brand,
-                        item: keywordInfo.item
-                    }
-                }
-                if (doc.rank > 0) summary[dateKey][doc.keyword]["duration"]++;  
-
-            })
-            setSummary(summary);
+            setAmountGroupedByMonthAndInfluencer(data);
         }
-        fetchSummary();
+
+        fetchAmountByMonthAndInfluencer();
     }, [])
 
-    const download = (obj) => {
-        if(!obj[selected]){
-            alert("날짜를 선택해주세요");
-            return;
+
+
+    const handleSearch = () => {
+        if(selected === "선택"){
+            alert("날짜를 선택해주세요.")
+            return
         }
 
-        const data = [];
+        setIsSearchClicked(true);
+
+        const filtered = summaryByMonth.filter((doc) => doc.formattedMonth === selected);
+ 
+        setSelectedSummaryByMonth(filtered);
         
-        for(let keyword in obj[selected]){
-            const quote = obj[selected][keyword]["quote"];
-            const dailyValue = calDailyValForKey(quote);
-            const duration = obj[selected][keyword]["duration"];
-            const value = duration * dailyValue;
-            const brand = obj[selected][keyword]["brand"];
-            const item = obj[selected][keyword]["item"];
-            const influencer = obj[selected][keyword]["influencer"];
+        const found = amountByMonth.find((doc) => doc.date === selected);
 
-            const doc = {
-                keyword,
-                influencer,
-                brand,
-                item,
-                quote,
-                dailyValue,
-                duration,
-                value
-            }
+        if(selectedInfluencer === "전체"){    
+            setAmount(found ? found.amount : 0);
+        }else if(selectedInfluencer === "Group By"){
+            const filtered = amountGroupedByMonthAndInfluencer.filter((doc) => doc.formattedMonth === selected);
+
+            setAmount(found ? found.amount : 0);
+            setSelectedAmountGroupedByMonthAndInfluencer(filtered);
+        }else{
+            const filteredByInfluencer = filtered.filter((doc) => doc.influencer === selectedInfluencer);
             
-            data.push(doc);
+            setSummaryByMonthAndInfluencer(filteredByInfluencer);
+            
+            const amount = filteredByInfluencer.reduce((acc, cur) => acc + (cur.amount || 0), 0);
+
+            console.log(amount)
+            setAmount(amount);
         }
 
-        const worksheet = XLSX.utils.json_to_sheet(data);
-        const workbook = XLSX.utils.book_new();
-
-        XLSX.utils.book_append_sheet(workbook, worksheet, "sheet1");
-
-        XLSX.writeFile(workbook, "keychal.xlsx");
     }
 
-    const logout = () => {
+    const handleDownload = () => {
+        
+    }
+
+    const handleLogout = () => {
         localStorage.removeItem("token");
-        setUser(null);
-        navigate("/login");
+        navigate("/login")
+    }
+
+    const numberFormat = (value) => {
+        return Math.round(value).toLocaleString();
     }
 
     return (
-            <div
-                style={{
-                    padding: 10,
-                    userSelect: "none",
-            }}>
-
-                <div
-                    style={{
-                        display: "flex",
-                        gap: 10
-                    }}
-                >
-
-                    <div style={{
-                        width: 150, 
-                        position: "relative",
-                    }}>
-
-                        <div
-                            onClick={() => setIsOpen(prev => !prev)}
-                            style={{
-                                border: "1px solid #ccc",
-                                padding: 10,
-                                cursor: "pointer",
-                                background: "#fff",
-                                fontWeight: "bold",
-                                borderRadius: 5
-                            }}
-                        >
-                            {selected}
+            <div className="home">
+                <div className="keychal-summary-header">
+                    <div className="form">
+                        <div 
+                            className="selection"
+                            onClick={() => setIsOpen(prev => !prev)}>
+                                {selected}
                         </div>
-
                         {isOpen && (
-                            <div
-                                style={{
-                                    position: "absolute",
-                                    width: "100%",
-                                    border: "1px solid #ccc",
-                                    background: "#fff",
-                                    zIndex: 10
-                                }}
-                            >
-                                <>
-                                    <div
-                                        style={{
-                                            padding:10,
-                                            cursor: "pointer",
-                                            borderBottom: "1px solid #eee",
-                                            fontSize: 14
-                                        }}
-                                        onClick={() => {
-                                            setIsOpen(false);
-                                            setSelected("선택");
-                                        }}>선택</div>
-                                    {Object.keys(summary).map((e, i) => (
-                                        <div
-                                            key={i}
-                                            onClick={() => {
-                                                setSelected(e);
-                                                setIsOpen(false);
-                                            }}
-                                            style={{
-                                                padding: 10,
-                                                cursor: "pointer",
-                                                borderBottom: "1px solid #eee",
-                                                fontSize: 14
-                                            }}
-                                        >
-                                            {e}
-                                        </div>
-                                    ))}
-                                </>
-                            </div>                         
+                            <div className="drop-down">
+                                <div 
+                                    className="li"
+                                    onClick={() => {
+                                        setIsOpen(false)
+                                        setIsSearchClicked(false)
+                                        setSelected("선택")
+                                    }}>선택</div>
+
+                                {formattedMonths.map((v, i) => (
+                                    <React.Fragment
+                                        key={i}>
+                                            <div 
+                                                className="li"
+                                                onClick={() => {
+                                                    setIsOpen(false)
+                                                    setIsSearchClicked(false)
+                                                    setSelected(v)
+                                                }}>
+                                                {v}
+                                            </div>
+                                    </React.Fragment>
+                                ))}
+                            </div>
                         )}
-
-                    </div>
-
-                    <button
-                        style={{
-                            fontWeight: "bold",
-                            border: "1px solid #ccc",
-                            background: "#3b82f6",
-                            color: "white"
-                        }}
-                        onClick={()=> setSelectedSearch(true)}
-                    >
-                        조회
-                    </button>
-
-                    <button
-                        style={{
-                            border: "1px solid #ccc",
-                            fontWeight: "bold",
-                            background: "#2563EB",
-                            color: "white"
-                        }}
-                        onClick={() => {download(summary)}}
-                    >
-                        다운로드
-                    </button>
-
-                    <div
-                        style={{
-                            padding: 10,
-                            border: "1px solid #ccc",
-                            borderRadius: 5,
-                            fontWeight: "bold",
-                            background: "#f3f4f6"
-                        }}>
-                        {user}
                     </div>
                     
-                    <button
-                        style={{
-                            fontWeight: "bold",
-                            border: "1px solid #ccc",
-                            background: "#ef4444",
-                            color: "white"
-                        }}
-                        onClick={logout}
-                    >
-                        로그아웃
+                    <div className="form">
+                        <div 
+                            className="selection"
+                            onClick={() => setIsOpenB(prev => !prev)}>
+                                {selectedInfluencer}
+                        </div>
+                        {isOpenB && (
+                            <div className="drop-down">
+                                <div 
+                                    className="li"
+                                    onClick={() => {
+                                        setIsOpenB(false)
+                                        setIsSearchClicked(false)
+                                        setSelectedInfluencer("전체")
+                                    }}>전체</div>
+
+                                <div 
+                                    className="li"
+                                    onClick={() => {
+                                        setIsOpenB(false)
+                                        setIsSearchClicked(false)
+                                        setSelectedInfluencer("Group By")
+                                    }}>Group By</div>
+
+                                {influencers?.map((v, i) => (
+                                    <div
+                                        key={i}>
+                                            <div 
+                                                className="li"
+                                                onClick={() => {
+                                                    setIsOpenB(false)
+                                                    setIsSearchClicked(false)
+                                                    setSelectedInfluencer(v.influencer)
+                                                }}>
+                                                {v.influencer}
+                                            </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+
+                    <button 
+                        className="summary-button search"
+                        onClick={handleSearch}>
+                            조회
                     </button>
 
+                    <button
+                        className="summary-button download"
+                        onClick={handleDownload}>
+                            다운로드
+                    </button>
 
+                    <div className="summary-user">{user}</div>
+
+                    <button
+                        className="summary-button summary-logout"
+                        onClick={handleLogout}>
+                            로그아웃
+                    </button>
 
                 </div>
-            
-            {selectedSearch && (
-                <div
-                    style={{
-                        display: "grid",
-                        fontSize: 14.5,
-                        gridTemplateColumns: "repeat(8, 1fr)",
-                        placeItems: "center",
-                    }}
-                >
-                    <h3>KEYWORD</h3>
-                    <h3>INFLUENCER</h3>
-                    <h3>BRAND</h3>
-                    <h3>ITEM</h3>
-                    <h3>QUOTE</h3>
-                    <h3>일별금액</h3>
-                    <h3>유지일수</h3>
-                    <h3>금액</h3>
 
-                    {summary[selected] && Object.keys(summary[selected]).map((k, idx) => (
-                        <React.Fragment
-                            key={idx}>
-                                <div
-                                    className="el">{k}</div>
-                                <div
-                                    className="el">{summary[selected][k]["influencer"]}</div>
-                                <div
-                                    className="el">{summary[selected][k]["brand"]}</div>
-                                <div
-                                    className="el">{summary[selected][k]["item"]}</div>
-                                <div
-                                    className="el">{summary[selected][k]["quote"].toLocaleString()}</div>
-                                <div
-                                    className="el">{calDailyValForKey(summary[selected][k]["quote"]).toLocaleString()}</div>
-                                <div
-                                    className="el">{summary[selected][k]["duration"]}</div>
-                                <div
-                                    className="els">{(calDailyValForKey(summary[selected][k]["quote"]) * summary[selected][k]["duration"]).toLocaleString()}</div>
+                <div className="keychal-summary-body">
+                    {isSearchClicked && (
+                        selectedInfluencer === "Group By" ? (
+                            <>
+                            <div className="keychal-table-by-influencer">
+                                <h2 style={{textAlign: "center"}}>INFLUENCER</h2>
+                                <h2 style={{textAlign: "center"}}>AMOUNT</h2>
 
-                        </React.Fragment>
-                    ))}
-                    
+                                    {selectedAmountGroupedByMonthAndInfluencer.map((data, i) => (
+                                        <React.Fragment
+                                            key={i}>
+                                                <div style={{border:"1px solid #ccc", textAlign: "center", height: 30, lineHeight: "30px"}}>
+                                                    {data.influencer}</div>
+                                                <div style={{border:"1px solid #ccc", textAlign: "center", height: 30, lineHeight: "30px"}}>
+                                                    {numberFormat(data.amount)}</div>
+                                        </React.Fragment>
+                                    ))}
+                            </div>
+
+                            <div className="footer-amount">
+                                <div style={{fontSize: 25, fontWeight: 600, textAlign:"center"}}>금액</div>
+                                <div style={{fontSize: 22, fontWeight: 500, paddingLeft: 5}}>{numberFormat(amount)}</div>
+                            </div>
+                            </>
+                        ) : (
+                            <>
+                            <div className="keychal-table">
+                                <h2>KEYWORD</h2>
+                                <h2>INFLUENCER</h2>
+                                <h2>ITEM</h2>
+                                <h2>BRAND</h2>
+                                <h2>QUOTE</h2>
+                                <h2>DAILY AMOUNT</h2>
+                                <h2>DURATION</h2>
+                                <h2>AMOUNT</h2>
+
+                                <>
+                                    {(selectedInfluencer === "전체" ? (
+                                        selectedSummaryByMonth.map((summary, idx) => (
+                                            <React.Fragment
+                                                key={idx}>
+                                                    <div className="summary-tile">{summary.keyword}</div>
+                                                    <div className="summary-tile">{summary.influencer}</div>
+                                                    <div className="summary-tile">{summary.item}</div>
+                                                    <div className="summary-tile">{summary.brand}</div>
+                                                    <div className="summary-tile">{numberFormat(summary.quote)}</div>
+                                                    <div className="summary-tile">{numberFormat(summary.dailyAmount)}</div>
+                                                    <div className="summary-tile">{summary.duration}</div>
+                                                    <div className="summary-tile">{numberFormat(summary.amount)}</div>
+                                            </React.Fragment>
+                                        ))
+                                    ) : (
+                                        summaryByMonthAndInfluencer.map((summary, idx) => (
+                                            <React.Fragment
+                                                key={idx}>
+                                                    <div className="summary-tile">{summary.keyword}</div>
+                                                    <div className="summary-tile">{summary.influencer}</div>
+                                                    <div className="summary-tile">{summary.item}</div>
+                                                    <div className="summary-tile">{summary.brand}</div>
+                                                    <div className="summary-tile">{numberFormat(summary.quote)}</div>
+                                                    <div className="summary-tile">{numberFormat(summary.dailyAmount)}</div>
+                                                    <div className="summary-tile">{summary.duration}</div>
+                                                    <div className="summary-tile">{numberFormat(summary.amount)}</div>
+                                            </React.Fragment>                   
+                                        ))
+                                    ))
+                                    }
+                                </>
+                            </div>
+
+                            <div className="keychal-summary">
+                                <h2>전체금액</h2>
+                                <p style={{
+                                    display: "flex",
+                                    alignItems: "center",
+                                    fontSize: 23,
+                                    fontWeight: "bold"}}>{numberFormat(amount)}</p>
+                            </div>
+                            </>
+                        )
+                    )}
                 </div>
-
-            )}
-
-            </div>
-            )
+        </div>
+    )
 }

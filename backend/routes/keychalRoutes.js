@@ -15,16 +15,18 @@ export default (controllers, requireToken) => {
   router.get("/keyword/states", requireToken, controllers.getKeywordStates);
   router.get("/states", controllers.getStatesByInfluencer);
   router.get("/infl/keyword", controllers.getInflTheKeywordStates);
-  router.get("/states/cal", requireToken, controllers.countVisibleKeywords);
+  router.get("/all-keywords-grouped-by-rank", requireToken, controllers.getAllKeywordsByRank);
   router.get("/statesall", requireToken, controllers.getAllStates);
-  router.post("/keyword_state_update", requireToken, controllers.updateKeywordStates);
-  router.get("/influencer/amount", controllers.getAmountByInfluencerAndMonth);
+  router.get("/influencer/amount", controllers.getAmountByMonthAndInfluencer);
   router.get("/summary", requireToken, controllers.getSummary);
   router.get("/keywordInfo", requireToken, controllers.getInfoForKeyword);
   router.get("/monthly-finalization", controllers.isMonthlyAmountFinalized);
   router.post("/monthly-finalization", controllers.finalizeMonthlyAmount);
   router.get("/keywords-summary", controllers.getKeywordsSummary);
-  router.get("/keywords-grouped-by-rank", controllers.getKeywordsByRank);
+  router.get("/influencer/keywords-grouped-by-rank", controllers.getKeywordsByRank);
+  router.get("/amount-by-month", controllers.getFullAmountByMonth);
+  router.get("/summary-by-month", controllers.getSummaryByMonth);
+  router.get("/amount-by-month-influencer", controllers.getAmountGroupedByMonthAndInfluencer);
 
   return router;
 };
