@@ -280,33 +280,6 @@ const createControllers = (db) => {
         }
     }
 
-    const getKeywordsByInfl = async (req, res) => {
-        try{
-            const {influencer, keyword} = req.query;
-            const data = await db.collection("Keychal_Keywords").findOne({influencer, keyword});
-            res.json(data);
-        }catch(err){
-            res.status(500).json({error: err.mesage});
-        }
-    }
-    
-    const getKeywordStates = async (req, res) => {
-        try {
-            const { keyword } = req.query;
-    
-            if (!keyword) return res.status(400).json({ message: "keyword required" });
-    
-            const states = await db
-              .collection("Keychal_States")
-              .find({ keyword })
-              .toArray();
-    
-            res.json(states);
-        } catch (err) {
-            res.status(500).json({ message: err.message });
-        }
-    }
-
     const getStatesByInfluencer = async (req, res) => {
         try{    
             const { influencer } = req.query;
@@ -341,20 +314,6 @@ const createControllers = (db) => {
             res.json(data)
         }catch(err){
             res.status(500).json({message: err.message})
-        }
-    }
-
-    const getInflTheKeywordStates = async (req, res) => {
-        try{
-            const {influencer, keyword} = req.query;
-
-            if(!influencer || !keyword) return res.status(400).json({message: "influencer or keywords needed!"})
-            
-            const states = await db.collection("Keychal_States").find({influencer, keyword}).toArray();
-            
-            res.json(states);
-        }catch(err){
-            res.status(500).json({error: err.message});
         }
     }
     
@@ -399,18 +358,6 @@ const createControllers = (db) => {
             res.status(500).json({message: err.message})
         }
     }
-    
-    const getAllStates = async (req, res) => {
-        try{
-            const {date} = req.query;
-            const data = await db.collection("Keychal_States").find({date}).toArray();
-    
-            res.json(data);
-        }catch(err){
-            res.status(500).json({message: err.message})
-        }
-    }
-    
     
     const getAmountByMonthAndInfluencer = async (req, res) => {
         try{
@@ -464,26 +411,6 @@ const createControllers = (db) => {
         }
     }
 
-    const getSummary = async (req, res) => {
-        try{
-            const data = await db.collection("Keychal_States").find({}).toArray();
-            res.json(data);
-        }catch(err){
-            res.status(500).json({error: err.message});
-        }
-    }
-
-    const getInfoForKeyword = async (req, res) => {
-        try{
-            const {keyword} = req.query;
-            const data = await db.collection("Keychal_Keywords").findOne({keyword});
-            
-            res.json(data);
-        }catch(err){
-            res.status(500).json({error: err.message})
-        }
-    }
-
     const isMonthlyAmountFinalized  = async (req, res) => {
         try{
             const {influencer, formattedMonth} = req.query;
@@ -514,6 +441,7 @@ const createControllers = (db) => {
     const getKeywordsSummary = async (req, res) => {
         try{
             const {influencer, month, year} = req.query;
+            console.log(`month: ${month} year: ${year}`)
             const lastDay = new Date(+year, +month, 0).getDate();
             const mm = String(month).padStart(2, "0");
             const data = await db.collection("Keychal_States").aggregate([
@@ -650,15 +578,9 @@ const createControllers = (db) => {
     return {
         getInfluencers,
         getKeywords,
-        getKeywordsByInfl,
-        getKeywordStates,
         getStatesByInfluencer,
-        getInflTheKeywordStates,
         getAllKeywordsByRank,
-        getAllStates,
         getAmountByMonthAndInfluencer,
-        getSummary,
-        getInfoForKeyword,
         isMonthlyAmountFinalized,
         finalizeMonthlyAmount,
         getKeywordsSummary,

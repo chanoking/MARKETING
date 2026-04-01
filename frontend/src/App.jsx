@@ -6,6 +6,8 @@ import InflPage from "./pages/InflPage.jsx";
 import SignupPage from "./pages/SignupPage.jsx";
 import KeychalSummaryPage from "./pages/KeychalSummaryPage.jsx";
 import InflSummaryPage from "./pages/InflSummaryPage.jsx";
+import SponsorPage from "./pages/SponsorPage.jsx";
+import FreePage from "./pages/FreePage.jsx";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 function App() {
@@ -20,6 +22,8 @@ function App() {
         <Route path="/influencer" element={<InflPage />} />
         <Route path="/keychalSummary" element={<KeychalSummaryPage />} />
         <Route path="/inflSummary" element={<InflSummaryPage />} />
+        <Route path="/sponsor" element={<SponsorPage/>}/>
+        <Route path="/free" element={<FreePage/>} />
       </Routes>
     </BrowserRouter>
   );

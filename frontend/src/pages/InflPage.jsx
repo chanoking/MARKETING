@@ -52,15 +52,17 @@ export default function InflPage(){
         const fetchKeywordsSummary = async () => {
             const params = new URLSearchParams({
                 influencer: infl,
-                month,
-                year
+                month: curMonth,
+                year: curYear
             })
+
             const res = await fetch(`${import.meta.env.VITE_API_URL}/keychal/keywords-summary?${params}`)
             const data = await res.json();
+
             setKeywordsSummary(data)
         }
         fetchKeywordsSummary();
-    }, [])
+    }, [curMonth, curYear])
     
     useEffect(() => {
         const fetchStates = async () => {
@@ -133,6 +135,7 @@ export default function InflPage(){
     }
 
     const handleSummary = () => {
+        // console.log(keywordsSummary)
         navigate("/inflSummary",{
             state: {influencer: infl, keywordsSummary, formattedMonth: currentYearMonth, amountByMonth}
         });

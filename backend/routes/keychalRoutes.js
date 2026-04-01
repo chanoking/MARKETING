@@ -11,15 +11,9 @@ export default (controllers, requireToken) => {
 
   router.get("/influencers", requireToken, controllers.getInfluencers);
   router.get("/keywords/:influencer_id", controllers.getKeywords);
-  router.get("/inflKeywords", controllers.getKeywordsByInfl);
-  router.get("/keyword/states", requireToken, controllers.getKeywordStates);
   router.get("/states", controllers.getStatesByInfluencer);
-  router.get("/infl/keyword", controllers.getInflTheKeywordStates);
   router.get("/all-keywords-grouped-by-rank", requireToken, controllers.getAllKeywordsByRank);
-  router.get("/statesall", requireToken, controllers.getAllStates);
   router.get("/influencer/amount", controllers.getAmountByMonthAndInfluencer);
-  router.get("/summary", requireToken, controllers.getSummary);
-  router.get("/keywordInfo", requireToken, controllers.getInfoForKeyword);
   router.get("/monthly-finalization", controllers.isMonthlyAmountFinalized);
   router.post("/monthly-finalization", controllers.finalizeMonthlyAmount);
   router.get("/keywords-summary", controllers.getKeywordsSummary);

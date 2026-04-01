@@ -1,5 +1,6 @@
 import { useNavigate, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react"
+import "../css/homepage.css"
 
 export default function HomePage() {
   const [user, setUser] = useState(useLocation().state?.user);
@@ -64,14 +65,7 @@ export default function HomePage() {
             }}>
 
               <div
-                style={{
-                  border: "1px solid #ccc",
-                  cursor: "pointer",
-                  padding: "40px",
-                  backgroundColor: "rgba(0, 102, 204, 0.7)",
-                  color: "white",
-                  borderRadius: "5px"
-                }}
+                className="home-tile blog"
                 onClick={() => navigate('/blog', {
                   state:{user}
                 })}
@@ -80,19 +74,24 @@ export default function HomePage() {
               </div>
 
               <div
-                style={{
-                  border: "1px solid #ccc",
-                  cursor: "pointer",
-                  padding: "40px",
-                  backgroundColor: "rgba(204, 0, 0, 0.7)",
-                  color: "white",
-                  borderRadius: "5px"
-                }}
+                className="home-tile keychal"
                 onClick={() => navigate('/keychal', {
                   state:{user}
                 })}
               >
                 키챌
+              </div>
+
+              <div
+                className="home-tile free"
+                onClick={() => navigate("/free")}>
+                FREE
+              </div>
+
+              <div
+                className="home-tile sponsor"
+                onClick={() => navigate("/sponsor")}>
+                  SPONSOR
               </div>
 
             </div>

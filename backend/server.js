@@ -43,7 +43,6 @@ app.use(fileUpload());
 // =======================
 const frontendPath = path.join(__dirname, "../frontend");
 
-
 // =======================
 // Start server
 // =======================
