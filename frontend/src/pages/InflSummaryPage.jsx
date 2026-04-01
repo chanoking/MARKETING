@@ -13,11 +13,12 @@ export default function InflSummaryPage(){
     
     const location = useLocation();
     const {influencer, keywordsSummary, formattedMonth, amountByMonth} = location?.state;
+    const [taxOrOutsourcing, setTaxOrOutsourcing] = useState(influencer.classification);
     
     useEffect(() => {
         const fetchMonthlyFinalizedStatus = async () => {
             const params = new URLSearchParams({
-                influencer, formattedMonth
+                influencer: influencer.influencer, formattedMonth
             })
             const res = await fetch(`${import.meta.env.VITE_API_URL}/keychal/monthly-finalization?${params}`);
             const data = await res.json();
@@ -34,7 +35,7 @@ export default function InflSummaryPage(){
                     "Content-Type": "application/json"
                 },
                 body: JSON.stringify({
-                    influencer,
+                    influencer: influencer.influencer,
                     formattedMonth,
                     amount: formatNumber(amountByMonth)
                 })
@@ -55,6 +56,14 @@ export default function InflSummaryPage(){
 
     const formatNumber = (value) => {
         return Math.round(value).toLocaleString();
+    }
+
+    const calculateTaxForOutsourcing = (amount) => {
+        const taxRate = 0.03;
+        const businessIncomeTax = Math.floor((amount * taxRate) / 10) * 10;
+        const localIncomeTax = businessIncomeTax * 0.1;
+        
+        return [businessIncomeTax + localIncomeTax, amount - (businessIncomeTax + localIncomeTax)];
     }
 
     return (
@@ -115,21 +124,35 @@ export default function InflSummaryPage(){
                     alignItems: "center",
                     textAlign: "center"
             }}>
-
                 <div className="summary-header">공급가액</div>
                 <div className="summary-header">세액</div>
                 <div className="summary-header">합계금액</div>
                 <div className="summary-header">확인</div>
-            
-                <div>
-                    {formatNumber(amountByMonth)}
-                </div>
-                <div>
-                    {formatNumber(amountByMonth * 0.1)}
-                </div>
-                <div>
-                    {formatNumber(amountByMonth * 1.1)}
-                </div>
+                {taxOrOutsourcing === "세금" ? (
+                <>
+                    <div>
+                        {formatNumber(amountByMonth)}
+                    </div>
+                    <div>
+                        {formatNumber(amountByMonth * 0.1)}
+                    </div>
+                    <div>
+                        {formatNumber(amountByMonth * 1.1)}
+                    </div>
+                </>
+                ) : (
+                    <>
+                    <div>
+                        {formatNumber(amountByMonth)}
+                    </div>
+                    <div>
+                        {formatNumber(calculateTaxForOutsourcing(amountByMonth)[0])}
+                    </div>
+                    <div>
+                        {formatNumber(calculateTaxForOutsourcing(amountByMonth)[1])}
+                    </div>
+                    </>
+                )}
         
                 {!isFinalized ? (
                     
@@ -198,10 +221,21 @@ export default function InflSummaryPage(){
                                         style={{
                                             fontWeight: 500
                                         }}>해당 금액이 맞습니까?</p>
-                                    <p>공급가액: {formatNumber(amountByMonth)}</p>
-                                    <p>세액: {formatNumber(amountByMonth * 0.1)}</p>
-                                    <p> 합계금액: {formatNumber(amountByMonth * 1.1)}</p>
-                                    </div>
+                                    {taxOrOursourcing === "세금" ? (
+                                        <>
+                                        <p>공급가액: {formatNumber(amountByMonth)}</p>
+                                        <p>세액: {formatNumber(amountByMonth * 0.1)}</p>
+                                        <p>합계금액: {formatNumber(amountByMonth * 1.1)}</p>
+                                        </>
+                                    ) : (
+                                        <>
+                                        <p>공급가액: {formatNumber(amountByMonth)}</p>
+                                        <p>세액: {formatNumber(calculateTaxForOutsourcing(amountByMonth * 0.1)[0])}</p>
+                                        <p>합계금액: {formatNumber(calculateTaxForOutsourcing(amountByMonth * 0.1)[1])}</p>
+                                        </>
+                                    )}
+                            </div>
+
                                 <div
                                     style={{
                                         display: "flex",
@@ -216,7 +250,7 @@ export default function InflSummaryPage(){
                                         onClick={() => setIsConfirmClicked(false)}
                                         >취소</button>
                                 </div>
-                        </div>
+                    </div>
                     
                 </div>
             )}

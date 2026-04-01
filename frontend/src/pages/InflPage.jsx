@@ -137,7 +137,7 @@ export default function InflPage(){
     const handleSummary = () => {
         // console.log(keywordsSummary)
         navigate("/inflSummary",{
-            state: {influencer: infl, keywordsSummary, formattedMonth: currentYearMonth, amountByMonth}
+            state: {influencer, keywordsSummary, formattedMonth: currentYearMonth, amountByMonth}
         });
     }
 
