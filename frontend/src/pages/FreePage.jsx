@@ -3,17 +3,15 @@ import * as XLSX from "xlsx";
 import "../css/freePage.css";
 
 export default function FreePage(){
-    const [freeData, setFreeData] = useState([]);
-    const [pricing, setPricing] = useState([]);
-    const [prefixOfFile, setPrefixOfFile] = useState("");
     const [year, setYear] = useState("");
     const [month, setMonth] = useState("");
     const [marketingCost, setMarketingCost] = useState([]);
     const [list, setList] = useState([]);
     const [expenseReportForOutsourcing, setExpenseReportForOutsourcing] = useState([]);
+    const [prefixOfFile, setPrefixOfFile] = useState("");
 
     console.log(marketingCost);
-
+    
     useEffect(() => {
         const fetchKeywordChallenge = async () => {
             if(month === "" || year === "") return;
@@ -44,7 +42,7 @@ export default function FreePage(){
                     발행수: 1,
                     단가: doc.amount,
                     업무분류: "1.바이럴마케팅",
-                    비고: "" 
+                    "비고 ": "" 
                 }])
             })
         }
@@ -74,13 +72,13 @@ export default function FreePage(){
                     세목: "05.바이럴_협찬",
                     세세목: "블로그_인플협찬",
                     적요: "",
-                    월: `${month}월`,
+                    월: doc.year_date.split(" ")[1],
                     금액: doc.amount,
                     비고: "",
                     발행수: doc.cnt,
                     단가: doc.amount / doc.cnt,
                     업무분류: "1.바이럴마케팅",
-                    "비고": ""
+                    "비고 ": ""
                 }])
             })
         }
@@ -100,8 +98,8 @@ export default function FreePage(){
         
             const date = new Date(data[0].전달일.split("T")[0]);
             const year = date.getFullYear();
-            const month = date.getMonth();
-            const last = date.getDate();
+            const month = date.getMonth() + 1;
+            const last = new Date(year, month, 0).getDate();
 
             setYear(year);
             setMonth(month)
@@ -135,7 +133,7 @@ export default function FreePage(){
                 }])
             })
 
-            if(marketingCost.includes("free")) return
+            if(marketingCost.includes("free")) return;
 
             setList([...list, "free"]);
 
@@ -151,9 +149,9 @@ export default function FreePage(){
                     금액: doc.amount,
                     비고: "",
                     발행수: doc.cnt,
-                    단가: "",
+                    단가: doc.amount / doc.cnt,
                     업무분류: "1.바이럴마케팅",
-                    비고: ""
+                    "비고 ": ""
                 }])
             })
         }
@@ -170,16 +168,24 @@ export default function FreePage(){
     }
 
     const handleDownloadForExpenseReport = () => {
-        if(!(result.length)){
+        if(!(expenseReportForOutsourcing.length)){
             alert("내용을 가지고 있지 않습니다.");
             return;
         }
         
-        const worksheet = XLSX.utils.json_to_sheet(result);
+        const worksheet = XLSX.utils.json_to_sheet(expenseReportForOutsourcing);
         const workbook = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(workbook, worksheet, "cost_raw");
         
-        XLSX.writeFile(workbook, `${month}월_외주용역 비용정산_마케팅,블로그,모니터링,카페`);
+        XLSX.utils.book_append_sheet(workbook, worksheet, "cost_raw");
+        XLSX.writeFile(workbook, `${month}월_외주용역 비용정산_마케팅,블로그,모니터링,카페.xlsx`);
+    }
+
+    const handleDownloadForMarketingCost = () => {
+        const worksheet = XLSX.utils.json_to_sheet(marketingCost);
+        const workbook = XLSX.utils.book_new();
+        
+        XLSX.utils.book_append_sheet(workbook, worksheet, "블로그, 협찬_Actual");
+        XLSX.writeFile(workbook, `${prefixOfFile}_마케팅비용_정리_취합용_v3_진찬호_보고용.xlsx`);
     }
 
     return (
@@ -212,6 +218,7 @@ export default function FreePage(){
             
                     <button
                         className="free-button"
+                        onClick={handleDownloadForMarketingCost}
                         >다운로드 for 마케팅비용</button>
                 </div>
 

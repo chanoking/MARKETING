@@ -83,7 +83,8 @@ const createControllers = (db) => {
                         _id: "$cleanItem",
                         amount: {$sum: "$세금계산서 :VAT 미포함 / 인건비:세전"},
                         cnt: {$sum: 1},
-                        brand: {$first: "$브랜드"}
+                        brand: {$first: "$브랜드"},
+                        year_date: {$first: "$년-월"},
                     }
                 },
                 {
@@ -92,6 +93,7 @@ const createControllers = (db) => {
                         amount: 1,
                         cnt: 1,
                         brand: 1,
+                        year_date: 1,
                         _id: 0
                     }
                 }
