@@ -61,7 +61,7 @@ export default function InflSummaryPage(){
     const calculateTaxForOutsourcing = (amount) => {
         const taxRate = 0.03;
         const businessIncomeTax = Math.floor((amount * taxRate) / 10) * 10;
-        const localIncomeTax = businessIncomeTax * 0.1;
+        const localIncomeTax = Math.floor((businessIncomeTax * 0.1) / 10) * 10;
         
         return [businessIncomeTax + localIncomeTax, amount - (businessIncomeTax + localIncomeTax)];
     }
@@ -221,7 +221,7 @@ export default function InflSummaryPage(){
                                         style={{
                                             fontWeight: 500
                                         }}>해당 금액이 맞습니까?</p>
-                                    {taxOrOursourcing === "세금" ? (
+                                    {taxOrOutsourcing === "세금" ? (
                                         <>
                                         <p>공급가액: {formatNumber(amountByMonth)}</p>
                                         <p>세액: {formatNumber(amountByMonth * 0.1)}</p>

@@ -10,9 +10,11 @@ import { connectDB } from "./db.js";
 import blogRoutes from "./routes/blogRoutes.js";
 import keychalRoutes from "./routes/keychalRoutes.js";
 import authRoutes from "./routes/authRoutes.js";
+import freeRoutes from "./routes/freeRoutes.js";
 import keychalControllers from "./controllers/keychalController.js";
 import blogControllers from "./controllers/blogController.js";
 import authControllers from "./controllers/authController.js";
+import freeControllers from "./controllers/freeController.js";
 import { requireToken } from "./middlewares/authMiddleware.js"
 
 dotenv.config();
@@ -55,11 +57,13 @@ async function startServer() {
     const keychalCtrl = keychalControllers(db);
     const blogCtrl = blogControllers(db);
     const authCtrl = authControllers(db);
+    const freeCtrl = freeControllers(db);
     
     // 3️⃣ 라우터 등록 (컨트롤러 주입)
     app.use("/keychal", keychalRoutes(keychalCtrl, requireToken));
     app.use("/blog", blogRoutes(blogCtrl, requireToken));
     app.use("/auth", authRoutes(authCtrl));
+    app.use("/free", freeRoutes(freeCtrl, requireToken));
     
     app.use(express.static(frontendPath));
     
