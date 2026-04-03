@@ -3,189 +3,127 @@ import * as XLSX from "xlsx";
 import "../css/freePage.css";
 
 export default function FreePage(){
-    const [year, setYear] = useState("");
-    const [month, setMonth] = useState("");
+    const [year, setYear] = useState(null);
+    const [month, setMonth] = useState(null);
+    const [date, setDate] = useState(null);
     const [marketingCost, setMarketingCost] = useState([]);
-    const [list, setList] = useState([]);
-    const [expenseReportForOutsourcing, setExpenseReportForOutsourcing] = useState([]);
+    const [expenseReportForFree, setExpenseReportForFree] = useState([]);
     const [prefixOfFile, setPrefixOfFile] = useState("");
+    const [keychalForBusiness, setKeychalForBusiness] = useState([]);
+    const [keychalForOutsourcing, setKeychalForOutsourcing] = useState([]);
 
-    console.log(marketingCost);
-    
+    // ==================Marketing Cost============================
+
+    // Added to Marketing Cost as keychal
     useEffect(() => {
         const fetchKeywordChallenge = async () => {
-            if(month === "" || year === "") return;
+            if(!year) return;
 
             const token = localStorage.getItem("token");
-            const res = await fetch(`${import.meta.env.VITE_API_URL}/keychal/amount-by-month-item?year=${year}&month=${month}`, {
+            const res = await fetch(`${import.meta.env.VITE_API_URL}/expense-report/keychal/monthly-cost-by-item?year=${year}&month=${month}`, {
                 headers:{
                     Authorization:  `Bearer ${token}`
                 }
             })
             const data = await res.json();
-
-            if(list.includes("keychal")) return;
-
-            setList([...list, "keychal"]);
-
-            data.forEach((doc) => {
-                setMarketingCost((prev) => [...prev, {
-                    구분: "Actual",
-                    브랜드: modified(doc.brand),
-                    제품: doc.item,
-                    세목: "01.바이럴_블로그",
-                    세세목: "키챌_월보장",
-                    적요: "",
-                    월: `${month}월`,
-                    금액: doc.amount,
-                    비고: "",
-                    발행수: 1,
-                    단가: doc.amount,
-                    업무분류: "1.바이럴마케팅",
-                    "비고 ": "" 
-                }])
-            })
+            
+            setMarketingCost((prev) => [...prev, ...data]);
         }
         
         fetchKeywordChallenge()
-    }, [year, month])
+    }, [year])
     
+    console.log(marketingCost)
+    // Added to Marketing Cost as sponsor
     useEffect(() => {
         const fetchSponsor = async () => {
             const token = localStorage.getItem("token");
-            const res = await fetch(`${import.meta.env.VITE_API_URL}/free/monthly-cost-sponsor`, {
+            const res = await fetch(`${import.meta.env.VITE_API_URL}/expense-report/sponsor/monthly-cost-by-item`, {
+                headers:{
+                    Authorization: `Bearer ${token}`
+                }
+            })
+            const data = await res.json();
+            // console.log(data)
+            
+            setMarketingCost((prev) => [...prev, ...data]);
+
+        }
+        
+        fetchSponsor()
+    }, [])
+    
+    
+    // Added to marketing cost as freelancer
+    useEffect(() => {
+        const fetchDataForFreelancer = async () => {
+            const token = localStorage.getItem("token");
+            const res = await fetch(`${import.meta.env.VITE_API_URL}/expense-report/free/monthly-cost-by-item`, {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            });
+            const data = await res.json();
+
+            setMarketingCost((prev) => [...prev, ...data]);
+            
+        }
+        fetchDataForFreelancer();
+    }, [])
+    
+    // ===============================Expense Report=======================================
+    
+    // settlement for manuscript of freelancers defined as outsourcing
+    useEffect(() => {
+        const fetchFreeData = async () => {
+            const token = localStorage.getItem("token");
+            const res = await fetch(`${import.meta.env.VITE_API_URL}/expense-report/free`, {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            });
+            const data = await res.json();
+            const date = new Date(data[0].일자.split("T")[0]);
+            const year = date.getFullYear();
+            const month = date.getMonth() + 1;
+            const day = date.getDate();
+            
+            setDate(date);
+            setYear(year);
+            setMonth(month);
+            setPrefixOfFile(String(year).slice(2) + String(month).padStart(2, "0") + String(day).padStart(2, "0"))
+            setExpenseReportForFree(data);
+        }
+        fetchFreeData();
+    }, [])
+    
+    // settlement for marketing activities of influencers classified as outsourcing and business
+    useEffect(() => {
+        if(!year) return;
+        
+        const fetchExpenseReportForKeychal = async (category) => {
+            const token = localStorage.getItem("token");
+            const params = new URLSearchParams({month, year, category});
+            const res = await fetch(`${import.meta.env.VITE_API_URL}/expense-report/keychal?${params}`,{
                 headers:{
                     Authorization: `Bearer ${token}`
                 }
             })
             const data = await res.json();
             
-            if(list.includes("sponsor")) return;
-
-            setList([...list, "sponsor"]);
-
-            data.forEach((doc) => {
-                setMarketingCost(prev => [...prev, {
-                    구분: "Actual",
-                    브랜드: modified(doc.brand),
-                    제품: doc.item,
-                    세목: "05.바이럴_협찬",
-                    세세목: "블로그_인플협찬",
-                    적요: "",
-                    월: doc.year_date.split(" ")[1],
-                    금액: doc.amount,
-                    비고: "",
-                    발행수: doc.cnt,
-                    단가: doc.amount / doc.cnt,
-                    업무분류: "1.바이럴마케팅",
-                    "비고 ": ""
-                }])
-            })
+            category === "외주" ? setKeychalForOutsourcing(data) : setKeychalForBusiness(data);
         }
         
-        fetchSponsor()
-    }, [])
-    
-    useEffect(() => {
-        const fetchDataForFreelancer = async () => {
-            const token = localStorage.getItem("token");
-            const res = await fetch(`${import.meta.env.VITE_API_URL}/free/free-monthly-cost-by-item`, {
-                headers: {
-                    Authorization: `Bearer ${token}`
-                }
-            });
-            const data = await res.json();
-        
-            const date = new Date(data[0].전달일.split("T")[0]);
-            const year = date.getFullYear();
-            const month = date.getMonth() + 1;
-            const last = new Date(year, month, 0).getDate();
+        fetchExpenseReportForKeychal("외주");
+        fetchExpenseReportForKeychal("세금");
+    }, [month, year, date])
 
-            setYear(year);
-            setMonth(month)
-            
-            const prefix = String(year).slice(2,4)+String(month).padStart(2, "0")+String(last).padStart(2, "0");
-
-            setPrefixOfFile(prefix);
-
-            data.forEach((doc) => {
-                setExpenseReportForOutsourcing((prev) => [...prev, {
-                    "회사명": "라이프앤바이오",
-                    "1": "3.판관비",
-                    "2": "2.광고선전비",
-                    "3": "1.바이럴마케팅",
-                    "코드": "",
-                    "세목": `바이럴_${doc.발행종류}_${doc.관리방식}`,
-                    "년-월": `${String(year).slice(2)}년 ${month}월`,
-                    "일자": date,
-                    "적요": `${doc.발행종류} ${doc.관리방식}`,
-                    "코드 ": "",
-                    "거래처(세금계산서 발행처명)": doc.작성자,
-                    "사업자등록번호": "",
-                    "세금계산서 :VAT 미포함 / 인건비:세전": doc.amount,
-                    "대변": "",
-                    "금액": "",
-                    "브랜드": doc.브랜드,
-                    "품목명": doc.item,
-                    "관리부서명": "마케팅팀",
-                    "세금계산서 :VAT 포함 / 인건비:세후": doc.amount * 0.967,
-                    "키워드": doc.키워드
-                }])
-            })
-
-            if(marketingCost.includes("free")) return;
-
-            setList([...list, "free"]);
-
-            data.forEach((doc) => {
-                setMarketingCost((prev) => [...prev, {
-                    구분: "Actual",
-                    브랜드: modified(doc.브랜드),
-                    제품: doc.item,
-                    세목: "01.바이럴_블로그",
-                    세세목: "프리랜서_원고",
-                    적요: "",
-                    월: `${month}월`,
-                    금액: doc.amount,
-                    비고: "",
-                    발행수: doc.cnt,
-                    단가: doc.amount / doc.cnt,
-                    업무분류: "1.바이럴마케팅",
-                    "비고 ": ""
-                }])
-            })
-        }
-        fetchDataForFreelancer();
-    }, [])
-    
-    const modified = (value) => {
-        switch (value){
-            case "파이토뉴트리": return "01. " + value;
-            case "혜인서": return "02. " + value;
-            case "흑보목": return "03. " + value;
-            default: return "05. " + value
-        }
-    }
-
-    const handleDownloadForExpenseReport = () => {
-        if(!(expenseReportForOutsourcing.length)){
-            alert("내용을 가지고 있지 않습니다.");
-            return;
-        }
-        
-        const worksheet = XLSX.utils.json_to_sheet(expenseReportForOutsourcing);
+    const handleDownload = (data, sheetName, fileName) => {
+        const worksheet = XLSX.utils.json_to_sheet(data);
         const workbook = XLSX.utils.book_new();
-        
-        XLSX.utils.book_append_sheet(workbook, worksheet, "cost_raw");
-        XLSX.writeFile(workbook, `${month}월_외주용역 비용정산_마케팅,블로그,모니터링,카페.xlsx`);
-    }
 
-    const handleDownloadForMarketingCost = () => {
-        const worksheet = XLSX.utils.json_to_sheet(marketingCost);
-        const workbook = XLSX.utils.book_new();
-        
-        XLSX.utils.book_append_sheet(workbook, worksheet, "블로그, 협찬_Actual");
-        XLSX.writeFile(workbook, `${prefixOfFile}_마케팅비용_정리_취합용_v3_진찬호_보고용.xlsx`);
+        XLSX.utils.book_append_sheet(workbook, worksheet, sheetName);
+        XLSX.writeFile(workbook, fileName);
     }
 
     return (
@@ -200,26 +138,52 @@ export default function FreePage(){
                     
                     <div
                         style={{
-                            position: "relative",
+                            width: "91%",
+                            height: 41,
+                            border: "1px solid #ccc",
+                            background: "#217346",
+                            borderRadius: 5,
+                            lineHeight: "41px",
+                            textAlign: "center",
+                            fontWeight: "bold",
+                            color: "white",
+                            padding: "5px 10px"
                         }}>
-                            <div
-                                style={{
-                                    position: "absolute",
-                                    border: "1px solid #fff",
-                                    zIndex: 0
-                                }}>
-                                    <div></div>
-
-                            </div>
+                        다운로드
                     </div>
+
                     <button
                         className="free-button"
-                        onClick={handleDownloadForExpenseReport}>다운로드 for 지결</button>    
+                        onClick={() => {
+                            handleDownload(keychalForBusiness, "cost_raw", `${month}월 키워드챌린지 (기업) 비용내역.xlsx`)
+                        }}
+                        >
+                        키워드챌린지 (기업) 비용 내역
+                    </button>
+
+                    <button
+                        className="free-button"
+                        onClick={() => {
+                            handleDownload(keychalForOutsourcing, "cost_raw", `${month}월_외주용역 비용정산_마케팅1팀_키워드챌린지.xlsx`)
+                        }}
+                        >
+                        외주용역_비용정산_키워드챌린지
+                    </button>
+
+                    <button
+                        className="free-button"
+                        onClick={() => {
+                            handleDownload(expenseReportForFree, "cost_raw", `${month}월_외주용역 비용정산_마케팅_블로그.xlsx`)
+                        }}>
+                            외주용역 마케팅 블로그</button>    
             
                     <button
                         className="free-button"
-                        onClick={handleDownloadForMarketingCost}
-                        >다운로드 for 마케팅비용</button>
+                        onClick={() => {
+                            handleDownload(marketingCost, "블로그, 협찬_Actual", `${prefixOfFile}_마케팅비용_정리_취합용_v3_진찬호_보고용.xlsx`)
+                        }}
+                        >마케팅1팀_비용정리 및 취합</button>
+
                 </div>
 
         </div>

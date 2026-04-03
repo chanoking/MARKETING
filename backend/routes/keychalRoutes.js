@@ -21,7 +21,6 @@ export default (controllers, requireToken) => {
   router.get("/amount-by-month", controllers.getFullAmountByMonth);
   router.get("/summary-by-month", controllers.getSummaryByMonth);
   router.get("/amount-by-month-influencer", controllers.getAmountGroupedByMonthAndInfluencer);
-  router.get("/amount-by-month-item", requireToken, controllers.getAmountByMonthAndItem);
 
   return router;
 };
