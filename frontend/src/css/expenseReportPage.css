@@ -1,0 +1,32 @@
+.free-button {
+    padding: 10px;
+    background: rgba(66, 133, 244, 0.7);
+    border: 1px solid #ccc;
+    color: ivory;
+    font-weight: bold;
+}
+
+.expense-report-dropdown{
+    position: relative;
+    width: 110px;
+}
+
+.year{
+    border: 1px solid #ccc;
+    width: 100%;
+    padding: 5px;
+    border-radius: 5px;
+    text-align: center;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.dropdown-year{
+    border: 1px solid #ccc;
+    width: 100%;
+    padding: 5px;
+    border-radius: 5px;
+    text-align: center;
+    font-weight: bold;
+    cursor: pointer;
+}

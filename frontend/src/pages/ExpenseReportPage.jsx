@@ -1,6 +1,7 @@
 import {useState, useEffect} from "react";
 import * as XLSX from "xlsx";
-import "../css/freePage.css";
+import "../css/expenseReportPage.css";
+import React from "react"
 
 export default function FreePage(){
     const [year, setYear] = useState(null);
@@ -26,6 +27,7 @@ export default function FreePage(){
                 }
             })
             const data = await res.json();
+            // console.log("fetchKeywordChallenge")
             
             setMarketingCost((prev) => [...prev, ...data]);
         }
@@ -33,7 +35,7 @@ export default function FreePage(){
         fetchKeywordChallenge()
     }, [year])
     
-    console.log(marketingCost)
+    // console.log(marketingCost)
     // Added to Marketing Cost as sponsor
     useEffect(() => {
         const fetchSponsor = async () => {
@@ -44,6 +46,7 @@ export default function FreePage(){
                 }
             })
             const data = await res.json();
+            // console.log("fetchSponsor")
             // console.log(data)
             
             setMarketingCost((prev) => [...prev, ...data]);
@@ -64,6 +67,7 @@ export default function FreePage(){
                 }
             });
             const data = await res.json();
+            // console.log("fetchDataForFreelancer")
 
             setMarketingCost((prev) => [...prev, ...data]);
             
@@ -83,6 +87,7 @@ export default function FreePage(){
                 }
             });
             const data = await res.json();
+            // console.log("fetchFreeData")
             const date = new Date(data[0].일자.split("T")[0]);
             const year = date.getFullYear();
             const month = date.getMonth() + 1;
@@ -110,7 +115,8 @@ export default function FreePage(){
                 }
             })
             const data = await res.json();
-            
+            // console.log("fetchExpenseReportForKeychal")
+
             category === "외주" ? setKeychalForOutsourcing(data) : setKeychalForBusiness(data);
         }
         
@@ -134,7 +140,7 @@ export default function FreePage(){
                         display: "flex",
                         flexDirection: "column",
                         gap: 20
-                    }}>
+                }}>
                     
                     <div
                         style={{

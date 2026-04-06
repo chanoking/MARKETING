@@ -59,7 +59,7 @@ export default function HomePage() {
           }}>
             <div style={{
               display: "grid",
-              gridTemplateColumns: "1fr 1fr",
+              gridTemplateColumns: "1fr 1fr 1fr",
               gap: "20px",
               maxWidth: "800px"
             }}>
@@ -83,16 +83,11 @@ export default function HomePage() {
               </div>
 
               <div
-                className="home-tile free"
-                onClick={() => navigate("/free")}>
-                FREE
+                className="home-tile expense-report"
+                onClick={() => navigate("/expense-report")}>
+                Expense Report
               </div>
 
-              <div
-                className="home-tile sponsor"
-                onClick={() => navigate("/sponsor")}>
-                  SPONSOR
-              </div>
 
             </div>
           </div>

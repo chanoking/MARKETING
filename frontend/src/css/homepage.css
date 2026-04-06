@@ -4,11 +4,15 @@
     padding: 20px;
     color: white;
     border-radius: 5px;
-    text-align: center;
+    /* text-align: center; */
     width: 200px;
     height: 100px;
     font-size: 30px;
+    display: flex;
+    justify-content: center;
+    white-space: nowrap;
     line-height: 100px;
+    white-space: nowrap; */
 }
 
 .keychal {
@@ -19,15 +23,8 @@
     background-color: rgba(0, 102, 204, 0.7)
 }
 
-.free {
+.expense-report {
     background-color: rgba(204, 255, 228, 0.7);
     color: black;
     font-weight: bold
-}
-
-.sponsor {
-    background-color: rgba(255, 215, 0);
-    color: gray;
-    font-weight: bold
-    
 }
