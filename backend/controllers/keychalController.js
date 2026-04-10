@@ -527,15 +527,14 @@ const createControllers = (db) => {
         }
     }
     
-    const getKeywordsByRank = async (req, res) => {
-        const {influencer, year, month} = req.query;
-        const mm = String(month).padStart(2, "0");
+    const getDefinedKeywordsByExposure = async (req, res) => {
+        const {influencer} = req.query;
+        
         try{
             const data = await db.collection("Keychal_States").aggregate([
                 {
                     $match: {
                         influencer,
-                        date:{$regex: `^${year}-${mm}`}
                     }
                 },
                 {
@@ -585,7 +584,7 @@ const createControllers = (db) => {
         isMonthlyAmountFinalized,
         finalizeMonthlyAmount,
         getKeywordsSummary,
-        getKeywordsByRank,
+        getDefinedKeywordsByExposure,
         getFullAmountByMonth,
         getSummaryByMonth,
         getAmountGroupedByMonthAndInfluencer,

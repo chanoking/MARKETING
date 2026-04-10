@@ -88,8 +88,8 @@ export default function InflPage(){
 
     useEffect(() => {
         const fetchGroupedKeywordsByRank = async () => {
-            const params = new URLSearchParams({ influencer: infl, year: curYear, month: curMonth });
-            const res = await fetch(`${import.meta.env.VITE_API_URL}/keychal/influencer/keywords-grouped-by-rank?${params}`);
+            const params = new URLSearchParams({ influencer: infl });
+            const res = await fetch(`${import.meta.env.VITE_API_URL}/keychal/influencer/keywords-grouped-by-exposure?${params}`);
             const data = await res.json();
   
             setGroupedKeywordsByRank(data);
