@@ -15,7 +15,7 @@ export default function KeychalPage() {
   const [user, setUser] = useState(useLocation().state?.user);
   const [keywordsGroupedByRank, setKeywordsGroupedByRank] = useState([]);
   const [selectedKeywordsGroupedByRank, setSelectedKeywordsGroupedByRank] = useState({});
-  const [isKeywordPopupOpen, setIsKeywordPopupOpen] = useState(false);
+  const [isDayClicked, setIsDayClicked] = useState(false);
   const [selectedAmount, setSelectedAmount] = useState(0);
   const [amountByMonth, setAmountByMonth] = useState([]);
 
@@ -111,7 +111,7 @@ export default function KeychalPage() {
     copyDate = copyDate.toISOString().split("T")[0];
 
     setSelectedDate(copyDate);
-    setIsKeywordPopupOpen(true);
+    setIsDayClicked(true);
 
     setSelectedKeywordsGroupedByRank(keywordsGroupedByRank.find((doc) => doc.date === copyDate));
   };
@@ -208,7 +208,7 @@ export default function KeychalPage() {
 
       </div>
 
-      {isKeywordPopupOpen && (
+      {isDayClicked && (
         <div className="popup">
           <h1 style={{ fontSize: 15 }}>{selectedDate}</h1>
           
@@ -248,7 +248,7 @@ export default function KeychalPage() {
             
             </div>
 
-            <button className="button" onClick={() => setIsKeywordPopupOpen(false)}>Close</button>
+            <button className="button" onClick={() => setIsDayClicked(false)}>Close</button>
 
           </div>
         )}

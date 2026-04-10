@@ -253,24 +253,17 @@ export default function InflPage(){
                         fontWeight: 600,
                         }}>{date.toISOString().split("T")[0]}</p>
                     
-                    <div
-                        style={{
-                            display: "flex",
-                            gap: 120,
-                        }}>
-                        <h4>Positive</h4>
-                        <h4>Negative</h4>
-                    </div>
-                    
                     <div style={{ display: "flex", gap: 80 }}>
 
                         <div>
+                            <h4>Positive</h4>
                             {groupedKeywordsByRank.find((v) => v.date === date.toISOString().split("T")[0])?.positive?.map((k, i) => (
                                 <p key={i} style={{ margin: 0, fontSize: 14}}>{k}</p>
                             ))}
                         </div>
 
                         <div>
+                            <h4>Negative</h4>
                             {groupedKeywordsByRank.find(v => v.date === date.toISOString().split("T")[0])?.negative.map((k, i) => (
                                 <p key={i} style={{margin: 0, fontSize: 14}}>{k}</p>
                             ))}
