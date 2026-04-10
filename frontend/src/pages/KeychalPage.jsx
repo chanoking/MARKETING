@@ -144,33 +144,11 @@ export default function KeychalPage() {
     }
   }
 
-
-  const overlayStyle = {
-    position: "fixed",
-    inset: 0,
-    background: "rgba(0,0,0,0.5)",
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center"
-  };
-
-  const popupInnerStyle = {
-    background: "white",
-    padding: 20,
-    width: "70%",
-    maxHeight: "80vh",
-    overflow: "auto",
-    display: "grid",
-    gridTemplateColumns: "repeat(4, 1fr)",
-    gap: "20px",
-    borderRadius: 5
-  };
-
   return (
     <div style={{padding: 20, userSelect: "none"}}>
     
       <div className="keychal-header">
-        <button className="logout">로그아웃</button>
+        <button className="logout" onClick={logout}>로그아웃</button>
         <div className="user">사용자: {user}</div>
         <button className="summary" onClick={() => navigate("/keychalSummary", {state:{user, amountByMonth, influencers}})}>Summary</button>
       </div>
