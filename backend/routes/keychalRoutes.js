@@ -17,7 +17,7 @@ export default (controllers, requireToken) => {
   router.get("/monthly-finalization", controllers.isMonthlyAmountFinalized);
   router.post("/monthly-finalization", controllers.finalizeMonthlyAmount);
   router.get("/keywords-summary", controllers.getKeywordsSummary);
-  router.get("/influencer/keywords-grouped-by-rank", controllers.getKeywordsByRank);
+  router.get("/influencer/keywords-grouped-by-exposure", controllers.getDefinedKeywordsByExposure);
   router.get("/amount-by-month", controllers.getFullAmountByMonth);
   router.get("/summary-by-month", controllers.getSummaryByMonth);
   router.get("/amount-by-month-influencer", controllers.getAmountGroupedByMonthAndInfluencer);

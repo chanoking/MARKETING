@@ -15,7 +15,7 @@ export default function KeychalPage() {
   const [user, setUser] = useState(useLocation().state?.user);
   const [keywordsGroupedByRank, setKeywordsGroupedByRank] = useState([]);
   const [selectedKeywordsGroupedByRank, setSelectedKeywordsGroupedByRank] = useState({});
-  const [isKeywordPopupOpen, setIsKeywordPopupOpen] = useState(false);
+  const [isDayClicked, setIsDayClicked] = useState(false);
   const [selectedAmount, setSelectedAmount] = useState(0);
   const [amountByMonth, setAmountByMonth] = useState([]);
 
@@ -111,7 +111,7 @@ export default function KeychalPage() {
     copyDate = copyDate.toISOString().split("T")[0];
 
     setSelectedDate(copyDate);
-    setIsKeywordPopupOpen(true);
+    setIsDayClicked(true);
 
     setSelectedKeywordsGroupedByRank(keywordsGroupedByRank.find((doc) => doc.date === copyDate));
   };
@@ -144,33 +144,11 @@ export default function KeychalPage() {
     }
   }
 
-
-  const overlayStyle = {
-    position: "fixed",
-    inset: 0,
-    background: "rgba(0,0,0,0.5)",
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center"
-  };
-
-  const popupInnerStyle = {
-    background: "white",
-    padding: 20,
-    width: "70%",
-    maxHeight: "80vh",
-    overflow: "auto",
-    display: "grid",
-    gridTemplateColumns: "repeat(4, 1fr)",
-    gap: "20px",
-    borderRadius: 5
-  };
-
   return (
     <div style={{padding: 20, userSelect: "none"}}>
     
       <div className="keychal-header">
-        <button className="logout">로그아웃</button>
+        <button className="logout" onClick={logout}>로그아웃</button>
         <div className="user">사용자: {user}</div>
         <button className="summary" onClick={() => navigate("/keychalSummary", {state:{user, amountByMonth, influencers}})}>Summary</button>
       </div>
@@ -230,7 +208,7 @@ export default function KeychalPage() {
 
       </div>
 
-      {isKeywordPopupOpen && (
+      {isDayClicked && (
         <div className="popup">
           <h1 style={{ fontSize: 15 }}>{selectedDate}</h1>
           
@@ -270,7 +248,7 @@ export default function KeychalPage() {
             
             </div>
 
-            <button className="button" onClick={() => setIsKeywordPopupOpen(false)}>Close</button>
+            <button className="button" onClick={() => setIsDayClicked(false)}>Close</button>
 
           </div>
         )}
