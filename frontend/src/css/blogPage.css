@@ -23,7 +23,6 @@
 
 .item {
     font-size: 13.5px;
-    flex: 0 0 auto;
     padding: 10px 20px;
     background: #eee;
     white-space: nowrap;
@@ -38,15 +37,8 @@
     border-radius: 999px;
     font-size: 20px;
     line-height: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
     padding: 5px;
     margin-top: 5px;
-}
-
-.scroll-btn:hover {
-    background: #f5f5f5;
 }
 
 .scroll-container::-webkit-scrollbar {
@@ -56,4 +48,13 @@
 .item.active {
   background: #333;
   color: white;
+}
+
+.blog-query-btn {
+    border: 1px solid #ccc;
+    background: #f5f6f8;
+}
+
+button:hover {
+  border: 2px solid gray;
 }
