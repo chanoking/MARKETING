@@ -14,6 +14,8 @@ import expenseReportRoutes from "./routes/expenseReportRoutes.js";
 import keychalControllers from "./controllers/keychalController.js";
 import blogControllers from "./controllers/blogController.js";
 import authControllers from "./controllers/authController.js";
+import blogServices from "./services/blogService.js";
+import blogRepository from "./repositories/blogRepository.js";
 import expenseReportControllers from "./controllers/expenseReportController.js";
 import { requireToken } from "./middlewares/authMiddleware.js"
 
@@ -53,15 +55,19 @@ async function startServer() {
     // 1️⃣ DB 연결
     const db = await connectDB();
     
+
+    const blogRepo = blogRepository(db);
+    const blogSvc = blogServices(blogRepo);
+    const blogCtrl = blogControllers(blogSvc);
+    app.use("/blog", blogRoutes(blogCtrl, requireToken));
+
     // 2️⃣ 컨트롤러에 DB 주입
     const keychalCtrl = keychalControllers(db);
-    const blogCtrl = blogControllers(db);
     const authCtrl = authControllers(db);
     const expenseReportCtrl = expenseReportControllers(db);
     
     // 3️⃣ 라우터 등록 (컨트롤러 주입)
     app.use("/keychal", keychalRoutes(keychalCtrl, requireToken));
-    app.use("/blog", blogRoutes(blogCtrl, requireToken));
     app.use("/auth", authRoutes(authCtrl));
     app.use("/expense-report", expenseReportRoutes(expenseReportCtrl, requireToken));
     

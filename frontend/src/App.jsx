@@ -1,5 +1,7 @@
 import HomePage from "./pages/HomePage.jsx";
-import BlogPage from "./pages/BlogPage.jsx"
+import BlogItemsPage from "./pages/Blog/BlogItemsPage.jsx";
+import BlogKeywordsPage from "./pages/Blog/BlogKeywordsPage.jsx";
+import BlogPage from "./pages/Blog/BlogPage.jsx";
 import KeychalPage from "./pages/KeychalPage.jsx"
 import LoginPage from "./pages/LoginPage.jsx";
 import InflPage from "./pages/InflPage.jsx";
@@ -14,7 +16,9 @@ function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/select" element={<HomePage />} />
+        <Route path="/blog/items" element={<BlogItemsPage />} />
         <Route path="/blog" element={<BlogPage />} />
+        <Route path="/blog/items/:itemId/keywords" element={<BlogKeywordsPage />} />
         <Route path="/keychal" element={<KeychalPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<SignupPage />} />
