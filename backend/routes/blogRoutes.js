@@ -5,6 +5,7 @@ export default (controllers, requireToken) => {
 
     router.get("/items", requireToken, controllers.getItems);
     router.get("/items/:itemId/keywords", requireToken, controllers.getKeywords);
+    router.get("/items/:itemId/keywords/metrics", requireToken, controllers.getMetrics);
 
     return router;
 }
