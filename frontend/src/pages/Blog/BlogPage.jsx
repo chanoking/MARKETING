@@ -56,7 +56,7 @@ export default function BlogPage() {
 
             const token = localStorage.getItem("token");
             const params = new URLSearchParams({
-                startDate: startDate.toISOString(), endDate: endDate.toISOString()
+                startDate: startDate?.toISOString(), endDate: endDate?.toISOString()
             })
             try{
                 const res = await fetch(`${import.meta.env.VITE_API_URL}/blog/items/${selectedItem}/keywords/metrics?${params}`, {
@@ -65,9 +65,6 @@ export default function BlogPage() {
                     }
                 })
                 const data = await res.json();
-
-                // console.log(data)
-
                 const metricsMap = new Map(
                     data.map(item => [item.keyword, item])
                 )
@@ -96,9 +93,9 @@ export default function BlogPage() {
     const onChange = (dates) => {
         const [start, end] = dates;
         
-        start.setHours(9);
+        start?.setHours(9);
 
-        if(end) end.setHours(9);
+        if(end) end?.setHours(9);
         
         setStartDate(start);
         setEndDate(end);
@@ -109,7 +106,7 @@ export default function BlogPage() {
         for(let i = 0; i <= days; i++){
             const current = new Date(start);
 
-            current.setDate(start.getDate() + i);
+            current.setDate(start?.getDate() + i);
             columns.push(current);
         }
 
@@ -143,13 +140,13 @@ export default function BlogPage() {
     }
 
     const dateFormat = (date) => {
-        const d = new Date(date);
-        
-        const [, month, day] = d.toISOString().split("T")[0].split("-");
+        if (!(date instanceof Date) || isNaN(date.getTime())) return;
 
-        return `${Number(month)}/${Number(day)}`;
+        const month = date.getMonth() + 1;
+        const day = date.getDate();
 
-    }
+        return `${month}/${day}`;
+    };
 
 
     return (
@@ -206,23 +203,27 @@ export default function BlogPage() {
                 <div className="cell blog-header">검색환경</div>
                 <div className="cell blog-header">검색량</div>
 
-                {dateColumns.map((dateCol, i) => (
-                    <div className="cell blog-header" key={i}>{dateFormat(dateCol)}</div>
-                ))}
-
-                {/* body */}
-                {keywords.map((keyword, i) => {
-                    return (
-                        <React.Fragment key={i}>
-                            <div className="cell" style={{fontSize: 14}}>{keyword.keyword}</div>
-                            <div className="cell" style={{fontSize: 14}}>{metrics.get(keyword.keyword)?.values[dateColumns[dateColumns.length - 1].toISOString().split("T")[0]]?.env}</div>
-                            <div className="cell" style={{fontSize: 14}}>{metrics.get(keyword.keyword)?.values[dateColumns[dateColumns.length - 1].toISOString().split("T")[0]]?.volume}</div>
-                            {dateColumns.map((dateCol, dateIdx) => (
-                                <div className="cell" key={dateIdx} style={{fontSize: 14}}>{metrics.get(keyword.keyword)?.values[dateColumns[dateIdx].toISOString().split("T")[0]]?.cnt}</div>
-                            ))}
-                        </React.Fragment>
-                )
-                })}
+                {endDate && startDate && (
+                    <>
+                    {dateColumns.map((dateCol, i) => (
+                        <div className="cell blog-header" key={i}>{dateFormat(dateCol)}</div>
+                    ))}
+    
+                    {/* body */}
+                    {keywords.map((keyword, i) => {
+                        return (
+                            <React.Fragment key={i}>
+                                <div className="cell" style={{fontSize: 14}}>{keyword.keyword}</div>
+                                <div className="cell" style={{fontSize: 14}}>{metrics.get(keyword.keyword)?.values[dateColumns[dateColumns.length - 1]?.toISOString().split("T")[0]]?.env}</div>
+                                <div className="cell" style={{fontSize: 14}}>{metrics.get(keyword.keyword)?.values[dateColumns[dateColumns.length - 1]?.toISOString().split("T")[0]]?.volume.toLocaleString()}</div>
+                                {dateColumns.map((dateCol, dateIdx) => (
+                                    <div className="cell" key={dateIdx} style={{fontSize: 14}}>{metrics.get(keyword.keyword)?.values[dateColumns[dateIdx]?.toISOString().split("T")[0]]?.cnt}</div>
+                                ))}
+                            </React.Fragment>
+                        )
+                    })}
+                    </>
+                )}
             </div>
 
         </div> 

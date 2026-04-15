@@ -66,6 +66,8 @@ button:hover {
     display: grid;
     border: 1px solid #ddd;
     overflow-x: auto;
+    overflow-y: auto;
+
 }
 
 .cell {
