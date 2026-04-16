@@ -1,6 +1,6 @@
 .blog-body{
     padding: 10px;
-    userSelect: none;
+    user-select: none;
     display: flex;
     flex-direction: column;
     gap: 30px;
@@ -9,7 +9,7 @@
 .wrapper{
     width: 1500px;
     margin: 0 auto;
-    overflow: hidden;
+    /* overflow: hidden; */
     display: flex;
     gap: 10px;
     align-items: center;
@@ -67,7 +67,6 @@ button:hover {
     border: 1px solid #ddd;
     overflow-x: auto;
     overflow-y: auto;
-
 }
 
 .cell {
@@ -84,3 +83,48 @@ button:hover {
     position: sticky;
     top: 0;
 }
+
+.blog-filter {
+    position: relative;
+    text-align: center;
+    width: 80px;
+    border-radius: 5px;
+    margin: 10px 0;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.blog-select {
+    border: 2px solid #ccc;
+}
+
+.blog-filter-menu {
+    position: absolute;
+    z-index: 1000;
+}
+
+.blog-filter-element {
+    border: 1px solid #ccc;
+    width: 78px;
+    height: 20px;
+    border: 1px solid #ccc;
+    cursor: pointer;
+    background: ivory;
+    border-radius: 2px;
+    padding: 5px 0px;
+}
+
+.resizable-header {
+  position: relative;
+}
+
+.resize-handle {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 6px;
+  height: 100%;
+  cursor: col-resize;
+  user-select: none;
+}
+
