@@ -1,0 +1,23 @@
+.blog_body{
+    padding: 10px;
+    user-select: none;
+}
+
+.items{
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    gap: 10px;
+}
+
+.item{
+    border:2px solid #ccc;
+    padding: 10px;
+    /* font-weight: bold; */
+    cursor: pointer;
+    color: black;
+}
+
+a{
+    text-decoration: none;
+    color: black;
+}
