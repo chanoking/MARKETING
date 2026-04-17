@@ -14,8 +14,9 @@ export default function BlogPage() {
   const [scrollLeft, setScrollLeft] = useState(0);
   const [dateColumns, setDateColumns] = useState([]);
   const [metrics, setMetrics] = useState(new Map());
-  const [dropdown, setDropdown] = useState(false);
-  const [option, setOption] = useState("전체");
+  const [filter, setFilter] = useState(false);
+  const [isFilterClicked, setIsFilterClicked] = useState(false);
+  const [selectedHeader, setSelectedHeader] = useState("");
 
   const [columnWidths, setColumnWidths] = useState({
     keyword: 180,
@@ -70,8 +71,7 @@ export default function BlogPage() {
       const token = localStorage.getItem("token");
       const params = new URLSearchParams({
         startDate: startDate?.toISOString(),
-        endDate: endDate?.toISOString(),
-        option,
+        endDate: endDate?.toISOString()
       });
 
       try {
@@ -93,7 +93,7 @@ export default function BlogPage() {
     };
 
     fetchMetrics();
-  }, [selectedItem, startDate, endDate, option]);
+  }, [selectedItem, startDate, endDate]);
 
   const scrollRef = useRef();
   const tableRef = useRef();
@@ -217,33 +217,9 @@ export default function BlogPage() {
   return (
     <div className="blog-body">
       <div className="wrapper">
-        <div>
-          <div className="blog-filter">
-            <div
-              className="blog-select"
-              onClick={() => setDropdown((prev) => !prev)}
-            >
-              {option}
-            </div>
-            {dropdown && (
-              <div className="blog-filter-menu">
-                {["전체", "노출", "미노출"].map((selection, i) => (
-                  <div
-                    className="blog-filter-element"
-                    key={i}
-                    onClick={() => {
-                      setOption(["전체", "노출", "미노출"][i]);
-                      setDropdown(false);
-                    }}
-                  >
-                    {selection}
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
-
+        <button 
+            className = {filter ? "btn-filter on": "btn-filter"}
+            onClick={() => setFilter((prev) => !prev)}>{filter ? "필터 사용중" : "필터"}</button>
         <div className="blog-datepicker">
           <DatePicker
             selectsRange
@@ -293,11 +269,20 @@ export default function BlogPage() {
         style={{
           gridTemplateColumns: `${columnWidths.keyword}px ${columnWidths.env}px ${columnWidths.volume}px repeat(${
             dateColumns.length > 0 ? dateColumns.length : 1
-          }, 80px)`,
+          }, ${!filter ? "80px" : "90px"})`,
         }}
       >
         <div className="cell blog-header resizable-header">
           키워드: {keywords.length}
+          {filter && (
+            <div className="filter-mark" onClick={() => {
+                setIsFilterClicked((prev) => !prev);
+                setSelectedHeader("키워드");
+                }}>
+                ▿
+            </div>
+          )}
+
           <div
             className="resize-handle"
             onMouseDown={() => handleMouseDownForTable("keyword")}
@@ -306,6 +291,14 @@ export default function BlogPage() {
 
         <div className="cell blog-header resizable-header">
           검색환경
+          {filter && (
+            <div className="filter-mark" onClick={() => {
+                setIsFilterClicked((prev) => !prev);
+                setSelectedHeader("검색환경");
+                }}>
+                ▿
+            </div>
+          )}
           <div
             className="resize-handle"
             onMouseDown={() => handleMouseDownForTable("env")}
@@ -314,6 +307,14 @@ export default function BlogPage() {
 
         <div className="cell blog-header resizable-header">
           검색량
+          {filter && (
+            <div className="filter-mark" onClick={() => {
+                setIsFilterClicked((prev) => !prev)
+                setSelectedHeader("검색량")
+                }}>
+                ▿
+            </div>
+          )}
           <div
             className="resize-handle"
             onMouseDown={() => handleMouseDownForTable("volume")}
@@ -323,9 +324,19 @@ export default function BlogPage() {
         {endDate &&
           startDate &&
           dateColumns.map((dateCol, i) => (
-            <div className="cell blog-header" key={i}>
+            <>
+            <div className="cell blog-header resizable-header" key={i}>
               {dateFormat(dateCol)}
+                {filter && (
+                <div className="filter-mark" onClick={() => {
+                    setIsFilterClicked((prev) => !prev);
+                    setSelectedHeader(`${dateFormat(dateCol)} ${i+1}`);
+                    }}>
+                    ▿
+                </div>
+                )}
             </div>
+            </>
           ))}
 
         {endDate &&
@@ -367,6 +378,18 @@ export default function BlogPage() {
               </React.Fragment>
             );
           })}
+        {isFilterClicked && selectedHeader && (
+            <div className="filtering-popup" style={
+                selectedHeader === "검색환경" ? 
+                {left: columnWidths.keyword - (220 - columnWidths.env)} 
+                : selectedHeader === "검색량" ?
+                {left: (columnWidths.keyword + columnWidths.env) - (220 - columnWidths.volume)}
+                : selectedHeader.split(" ").length > 1 ?
+                {left: (columnWidths.keyword + columnWidths.env + columnWidths.volume) - (220 - (90 * Number(selectedHeader.split(" ")[1])))}
+                : {}
+            }></div>
+
+        )}
       </div>
     </div>
   );

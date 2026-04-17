@@ -67,6 +67,17 @@ button:hover {
     border: 1px solid #ddd;
     overflow-x: auto;
     overflow-y: auto;
+    position: relative;
+}
+
+.filtering-popup {
+    position: absolute;
+    top: 41px;
+    background: #f8fafc;
+    border-radius: 3px;
+    width: 220px;
+    height: 300px;
+    border: 1px solid #ccc;
 }
 
 .cell {
@@ -84,36 +95,6 @@ button:hover {
     top: 0;
 }
 
-.blog-filter {
-    position: relative;
-    text-align: center;
-    width: 80px;
-    border-radius: 5px;
-    margin: 10px 0;
-    cursor: pointer;
-    font-weight: bold;
-}
-
-.blog-select {
-    border: 2px solid #ccc;
-}
-
-.blog-filter-menu {
-    position: absolute;
-    z-index: 1000;
-}
-
-.blog-filter-element {
-    border: 1px solid #ccc;
-    width: 78px;
-    height: 20px;
-    border: 1px solid #ccc;
-    cursor: pointer;
-    background: ivory;
-    border-radius: 2px;
-    padding: 5px 0px;
-}
-
 .resizable-header {
   position: relative;
 }
@@ -126,5 +107,29 @@ button:hover {
   height: 100%;
   cursor: col-resize;
   user-select: none;
+}
+
+.filter-mark {
+    position: absolute;
+    bottom: 3px;
+    right: 5px;
+    width: 15px;
+    height: 10px;
+    border: 2px solid #ccc;
+    font-weight: normal;
+    line-height: 10px;
+    border-radius: 2px;
+    cursor: pointer;
+}
+
+.btn-filter {
+    padding: 0.6em;
+    font-size: 0.9em;
+    border: 1px solid #ccc;
+}
+
+.on {
+    font-weight: bold;
+    background-color: #e6f0ff;
 }
 
