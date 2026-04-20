@@ -17,6 +17,11 @@ export default function BlogPage() {
   const [filter, setFilter] = useState(false);
   const [isFilterClicked, setIsFilterClicked] = useState(false);
   const [selectedHeader, setSelectedHeader] = useState("");
+  const [env, setEnv] = useState([]);
+  const [volume, setVolume] = useState([]);
+  const [keywordStates, setKeywordStates] = useState({});
+  const [envStates, setEnvStates] = useState({});
+  const [volStates, setVolStates] = useState({});
 
   const [columnWidths, setColumnWidths] = useState({
     keyword: 180,
@@ -59,21 +64,31 @@ export default function BlogPage() {
         }
       );
       const data = await res.json();
-      setKeywords(data);
+      const keywords = data.map(doc => doc.keyword);
+      
+      setKeywords(keywords);
+      
+      const keywordsObj = {};
+      
+      keywords.forEach((k) => {
+        if(!keywordsObj[k]) keywordsObj[k] = true;
+      })
+      
+      setKeywordStates(keywordsObj);
     };
     fetchKeywords();
   }, [selectedItem]);
-
+  
   useEffect(() => {
     const fetchMetrics = async () => {
       if (!selectedItem || !startDate || !endDate) return;
-
+      
       const token = localStorage.getItem("token");
       const params = new URLSearchParams({
         startDate: startDate?.toISOString(),
         endDate: endDate?.toISOString()
       });
-
+      
       try {
         const res = await fetch(
           `${import.meta.env.VITE_API_URL}/blog/items/${selectedItem}/keywords/metrics?${params}`,
@@ -85,8 +100,38 @@ export default function BlogPage() {
         );
         const data = await res.json();
         const metricsMap = new Map(data.map((item) => [item.keyword, item]));
+        const env = Array.from(metricsMap.values()).map(({values}) => {
+          const dates = Object.keys(values).sort();
+          const lastDate = dates[dates.length - 1];
+          
+          return values[lastDate]?.env
+        })
+        const volume = Array.from(metricsMap.values()).map(({values}) => {
+          const dates = Object.keys(values).sort();
+          const lastDate = dates[dates.length - 1];
+          
+          return values[lastDate]?.volume;
+        })
+        
+        volume.sort();
+        
+        setEnv(env);
+        setVolume(volume)
+        
+        const envObj = {};
+        const volObj = {};
 
+        env.forEach(e => {
+          if(!envObj[e]) envObj[e] = true;
+        }) 
+        volume.forEach(v => {
+          if(!volObj[v]) volObj[v] = true;
+        })
+
+        setEnvStates(envObj);
+        setVolStates(volObj);
         setMetrics(metricsMap);
+
       } catch (err) {
         console.error("fetch error:", err);
       }
@@ -94,6 +139,18 @@ export default function BlogPage() {
 
     fetchMetrics();
   }, [selectedItem, startDate, endDate]);
+
+  const handleFilter = () => {
+    const filteredKeywords = [...metrics.values()].filter(({keyword, values}) => {
+      const dates = Object.keys(values).sort();
+      const latest = dates[dates.length - 1];
+      return envStates[values[latest].env] && volStates[values[latest].volume];
+    }).map(({keyword}) => keyword);
+
+    console.log(filteredKeywords);
+    setKeywords(filteredKeywords)
+  }
+
 
   const scrollRef = useRef();
   const tableRef = useRef();
@@ -324,7 +381,6 @@ export default function BlogPage() {
         {endDate &&
           startDate &&
           dateColumns.map((dateCol, i) => (
-            <>
             <div className="cell blog-header resizable-header" key={i}>
               {dateFormat(dateCol)}
                 {filter && (
@@ -336,7 +392,6 @@ export default function BlogPage() {
                 </div>
                 )}
             </div>
-            </>
           ))}
 
         {endDate &&
@@ -345,11 +400,11 @@ export default function BlogPage() {
             return (
               <React.Fragment key={i}>
                 <div className="cell" style={{ fontSize: 14 }}>
-                  {keyword.keyword}
+                  {keyword}
                 </div>
                 <div className="cell" style={{ fontSize: 14 }}>
                   {
-                    metrics.get(keyword.keyword)?.values[
+                    metrics.get(keyword)?.values[
                       dateColumns[dateColumns.length - 1]
                         ?.toISOString()
                         .split("T")[0]
@@ -358,7 +413,7 @@ export default function BlogPage() {
                 </div>
                 <div className="cell" style={{ fontSize: 14 }}>
                   {metrics
-                    .get(keyword.keyword)
+                    .get(keyword)
                     ?.values[
                       dateColumns[dateColumns.length - 1]
                         ?.toISOString()
@@ -369,7 +424,7 @@ export default function BlogPage() {
                 {dateColumns.map((dateCol, dateIdx) => (
                   <div className="cell date" key={dateIdx} style={{ fontSize: 14 }}>
                     {
-                      metrics.get(keyword.keyword)?.values[
+                      metrics.get(keyword)?.values[
                         dateColumns[dateIdx]?.toISOString().split("T")[0]
                       ]?.cnt
                     }
@@ -381,13 +436,66 @@ export default function BlogPage() {
         {isFilterClicked && selectedHeader && (
             <div className="filtering-popup" style={
                 selectedHeader === "검색환경" ? 
-                {left: columnWidths.keyword - (220 - columnWidths.env)} 
+                {left: columnWidths.keyword - (262 - columnWidths.env)} 
                 : selectedHeader === "검색량" ?
-                {left: (columnWidths.keyword + columnWidths.env) - (220 - columnWidths.volume)}
+                {left: (columnWidths.keyword + columnWidths.env) - (262 - columnWidths.volume)}
                 : selectedHeader.split(" ").length > 1 ?
-                {left: (columnWidths.keyword + columnWidths.env + columnWidths.volume) - (220 - (90 * Number(selectedHeader.split(" ")[1])))}
+                {left: (columnWidths.keyword + columnWidths.env + columnWidths.volume) - (262 - (90 * Number(selectedHeader.split(" ")[1])))}
                 : {}
-            }></div>
+            }>
+              <div className = "filter-checklist">
+                {selectedHeader.includes("키워드") ? (
+                    [...new Set(keywords)].map((keyword, keyIdx) => (
+                        <label className = "blog-label" key={keyIdx}>
+                            {keyword}
+                            <input 
+                                type="checkbox"
+                                checked={keywordStates[keyword]}
+                                onChange={() => setKeywordStates((prev) => {
+                                    const keyObj = {...prev};
+                                    keyObj[keyword] = !keyObj[keyword]
+                                    return keywords;
+                                })} />
+                        </label>
+                    ))
+                ) : selectedHeader === "검색환경" ? (
+                    [...new Set(env)].map((env, envIdx) => (
+                        <label className = "blog-label" key={envIdx}>
+                            {env}
+                            <input 
+                                type="checkbox"
+                                checked={envStates[env]}
+                                onChange={() => setEnvStates((prev) => {
+                                    const envObj = {...prev};
+                                    envObj[env] = !envObj[env]
+                                    return envObj;
+                                })} />
+                        </label>
+                    )
+                )):selectedHeader === "검색량" ? (
+                  [...new Set(volume)].map((vol, volIdx) => (
+                    <label className = "blog-label" key={volIdx}>
+                      {vol}
+                      <input
+                        type="checkbox"
+                        checked={volStates[vol]}
+                        onChange={() => setVolStates((prev) => {
+                          const volObj = {...prev};
+                          volObj[vol] = !volObj[vol];
+                          return vol;
+                        })} />
+                    </label>
+                  ))
+                ) : <div></div>}
+              </div>
+
+              <button 
+                onClick={() => {
+                  setIsFilterClicked(false);
+                  handleFilter();
+                }}
+                className="filter-btn">OK</button>
+            </div>
 
         )}
       </div>

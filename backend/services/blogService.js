@@ -9,7 +9,7 @@ const createServices = (repositories) => {
         return await repositories.findAll("Blog_Keywords", {itemId: new ObjectId(itemId) });
     }
 
-    const getMetrics = async (itemId, startDate, endDate) => {
+    const getMetrics = async (itemId, startDate, endDate, option) => {
         const data = await repositories.findKeywordMetrics(
             new ObjectId(itemId),
             new Date(startDate),
