@@ -23,8 +23,8 @@ const createControllers = (services) => {
   const getMetrics = async (req, res) => {
     try{
       const {itemId} = req.params;
-      const {startDate, endDate} = req.query;
-      const data = await services.getMetrics(itemId, startDate, endDate);
+      const {startDate, endDate, option} = req.query;
+      const data = await services.getMetrics(itemId, startDate, endDate, option);
       
       res.json(data);
     }catch(err){
