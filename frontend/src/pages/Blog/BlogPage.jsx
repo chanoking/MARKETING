@@ -22,6 +22,7 @@ export default function BlogPage() {
   const [keywordStates, setKeywordStates] = useState({});
   const [envStates, setEnvStates] = useState({});
   const [volStates, setVolStates] = useState({});
+  const [allCheckKeyword, setAllCheckKeyword] = useState(true);
 
   const [columnWidths, setColumnWidths] = useState({
     keyword: 180,
@@ -101,8 +102,8 @@ export default function BlogPage() {
         const data = await res.json();
         const metricsMap = new Map(data.map((item) => [item.keyword, item]));
         const env = Array.from(metricsMap.values()).map(({values}) => {
-          const dates = Object.keys(values).sort();
-          const lastDate = dates[dates.length - 1];
+          const dates = Object.keys(values);
+          const lastDate = dates.at(-1);
           
           return values[lastDate]?.env
         })
@@ -144,10 +145,13 @@ export default function BlogPage() {
     const filteredKeywords = [...metrics.values()].filter(({keyword, values}) => {
       const dates = Object.keys(values).sort();
       const latest = dates[dates.length - 1];
-      return envStates[values[latest].env] && volStates[values[latest].volume];
+      const latestData = values[latest];
+      return latestData && envStates[values[latest].env] && volStates[values[latest].volume];
     }).map(({keyword}) => keyword);
+    
+    env.sort();
+    volume.sort();
 
-    console.log(filteredKeywords);
     setKeywords(filteredKeywords)
   }
 
@@ -270,6 +274,19 @@ export default function BlogPage() {
 
     return `${month}/${day}`;
   };
+
+  const handleAllElement = (header) => {
+    if(header === "keyword"){
+      setKeywordStates((prev) => {
+        const copied = {...prev};
+        
+        for(let key in copied){
+          copied[key] = !allCheckKeyword
+        }
+        return copied;
+      })
+    } 
+  }
 
   return (
     <div className="blog-body">
@@ -445,7 +462,18 @@ export default function BlogPage() {
             }>
               <div className = "filter-checklist">
                 {selectedHeader.includes("키워드") ? (
-                    [...new Set(keywords)].map((keyword, keyIdx) => (
+                  <>
+                    <label className = "blog-label">
+                      (SelectAll)
+                      <input
+                        type="checkbox"
+                        checked={allCheckKeyword}
+                        onChange={() => {
+                          setAllCheckKeyword((prev) => !prev)
+                          handleAllElement("keyword");
+                        }} />
+                    </label>
+                    {[...new Set(keywords)].map((keyword, keyIdx) => (
                         <label className = "blog-label" key={keyIdx}>
                             {keyword}
                             <input 
@@ -454,10 +482,11 @@ export default function BlogPage() {
                                 onChange={() => setKeywordStates((prev) => {
                                     const keyObj = {...prev};
                                     keyObj[keyword] = !keyObj[keyword]
-                                    return keywords;
+                                    return keyObj;
                                 })} />
                         </label>
-                    ))
+                    ))}
+                    </>
                 ) : selectedHeader === "검색환경" ? (
                     [...new Set(env)].map((env, envIdx) => (
                         <label className = "blog-label" key={envIdx}>
@@ -482,7 +511,7 @@ export default function BlogPage() {
                         onChange={() => setVolStates((prev) => {
                           const volObj = {...prev};
                           volObj[vol] = !volObj[vol];
-                          return vol;
+                          return volObj;
                         })} />
                     </label>
                   ))
