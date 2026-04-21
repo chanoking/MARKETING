@@ -23,6 +23,11 @@ export default function BlogPage() {
   const [envStates, setEnvStates] = useState({});
   const [volStates, setVolStates] = useState({});
   const [allCheckKeyword, setAllCheckKeyword] = useState(true);
+  const [allCheckEnv, setAllCheckEnv] = useState(true);
+  const [allCheckVol, setAllCheckVol] = useState(true);
+  const [isEnvFiltered, setIsEnvFiltered] = useState(false);
+  const [isVolFiltered, setIsVolFiltered] = useState(false);
+  const [isKeyFiltered, setIsKeyFiltered] = useState(false);
 
   const [columnWidths, setColumnWidths] = useState({
     keyword: 180,
@@ -146,15 +151,55 @@ export default function BlogPage() {
       const dates = Object.keys(values).sort();
       const latest = dates[dates.length - 1];
       const latestData = values[latest];
-      return latestData && envStates[values[latest].env] && volStates[values[latest].volume];
+      return latestData && keywordStates[keyword] && envStates[latestData.env] && volStates[latestData.volume];
     }).map(({keyword}) => keyword);
-    
-    env.sort();
-    volume.sort();
 
     setKeywords(filteredKeywords)
   }
 
+  const isItFiltered = (header) => {
+    const check = [...metrics.values()].every(({keyword, values}) => {
+      const dates = Object.keys(values).sort();
+      const latest = dates[dates.length - 1];
+      const latestData = values[latest];
+
+      if (header === "키워드") return keywordStates[keyword];
+      if (header === "검색환경") return envStates[latestData.env];
+      if (header === "검색량") return volStates[latestData.vol];
+    });
+
+    if(check && header === "키워드") {
+      setIsKeyFiltered(false);
+      return;
+    }
+    if(check && header === "검색환경") {
+      setIsEnvFiltered(false);
+      return;
+    }
+    if(check && header === "검색량") {
+      setIsVolFiltered(false);
+      return
+    }
+    
+    [...metrics.values()].forEach(({keyword, values}) => {
+      const dates = Object.keys(values).sort();
+      const latest = dates[dates.length - 1];
+      const latestData = values[latest];
+      
+      if(header === "키워드" && !keywordStates[keyword]){
+        setIsKeyFiltered(true);
+        return;
+      }     
+      if(header === "검색환경" && !envStates[latestData.env]){
+        setIsEnvFiltered(true);
+        return;
+      }
+      if(header === "검색량" && !volStates[latestData.vol]){
+        setIsVolFiltered(true);
+        return;
+      }
+    })
+  }
 
   const scrollRef = useRef();
   const tableRef = useRef();
@@ -285,6 +330,24 @@ export default function BlogPage() {
         }
         return copied;
       })
+    }else if(header === "env"){
+      setEnvStates((prev) => {
+        const copied = {...prev};
+
+        for(let key in copied){
+          copied[key] = !allCheckEnv
+        }
+        return copied;
+      })
+    }else{
+      setVolStates((prev) => {
+        const copied = {...prev};
+
+        for(let key in copied){
+          copied[key] = !allCheckVol
+        }
+        return copied;
+      })
     } 
   }
 
@@ -352,7 +415,8 @@ export default function BlogPage() {
             <div className="filter-mark" onClick={() => {
                 setIsFilterClicked((prev) => !prev);
                 setSelectedHeader("키워드");
-                }}>
+                }}
+                style={isKeyFiltered ? {color: "red"} : {}}>
                 ▿
             </div>
           )}
@@ -369,7 +433,9 @@ export default function BlogPage() {
             <div className="filter-mark" onClick={() => {
                 setIsFilterClicked((prev) => !prev);
                 setSelectedHeader("검색환경");
-                }}>
+                }}
+                style={isEnvFiltered ? {color: "red"} : {}}
+                >
                 ▿
             </div>
           )}
@@ -385,7 +451,8 @@ export default function BlogPage() {
             <div className="filter-mark" onClick={() => {
                 setIsFilterClicked((prev) => !prev)
                 setSelectedHeader("검색량")
-                }}>
+                }}
+                style={isVolFiltered ? {color: "red"} : {}}>
                 ▿
             </div>
           )}
@@ -461,7 +528,7 @@ export default function BlogPage() {
                 : {}
             }>
               <div className = "filter-checklist">
-                {selectedHeader.includes("키워드") ? (
+                {selectedHeader === "키워드" ? (
                   <>
                     <label className = "blog-label">
                       (SelectAll)
@@ -488,7 +555,18 @@ export default function BlogPage() {
                     ))}
                     </>
                 ) : selectedHeader === "검색환경" ? (
-                    [...new Set(env)].map((env, envIdx) => (
+                  <>
+                    <label className = "blog-label">
+                      (SelectAll)
+                      <input
+                        type="checkbox"
+                        checked={allCheckEnv}
+                        onChange={() => {
+                          setAllCheckEnv((prev) => !prev)
+                          handleAllElement("env");
+                        }} />
+                    </label>
+                    {[...new Set(env)].map((env, envIdx) => (
                         <label className = "blog-label" key={envIdx}>
                             {env}
                             <input 
@@ -500,9 +578,22 @@ export default function BlogPage() {
                                     return envObj;
                                 })} />
                         </label>
-                    )
-                )):selectedHeader === "검색량" ? (
-                  [...new Set(volume)].map((vol, volIdx) => (
+                    ))}
+                </>
+                )
+                :selectedHeader === "검색량" ? (
+                   <>
+                    <label className = "blog-label">
+                      (SelectAll)
+                      <input
+                        type="checkbox"
+                        checked={allCheckVol}
+                        onChange={() => {
+                          setAllCheckVol((prev) => !prev)
+                          handleAllElement("vol");
+                        }} />
+                    </label>
+                  {[...new Set(volume)].map((vol, volIdx) => (
                     <label className = "blog-label" key={volIdx}>
                       {vol}
                       <input
@@ -514,7 +605,8 @@ export default function BlogPage() {
                           return volObj;
                         })} />
                     </label>
-                  ))
+                  ))}
+                  </>
                 ) : <div></div>}
               </div>
 
@@ -522,6 +614,7 @@ export default function BlogPage() {
                 onClick={() => {
                   setIsFilterClicked(false);
                   handleFilter();
+                  isItFiltered(selectedHeader);
                 }}
                 className="filter-btn">OK</button>
             </div>
